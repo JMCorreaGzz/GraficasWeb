@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      body {
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <script type="module">
+
+      import * as THREE from './three.module.js';
+      import { OrbitControls } from "./OrbitControls.js";
+      import { GLTFLoader } from "./GLTFLoader.js";
+      import { STLLoader } from "./STLLoader.js";
+      //import {FBXLoader} from "./FBXLoader.js";
+      import {OBJLoader} from "./OBJLoader.js";
+      //import {MTLLoader} from "./MTLLoader.js";
+
+      // SCENE
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color("#34495E");
+
+      const camera = new THREE.PerspectiveCamera(
+        60,
+        window.innerWidth / window.innerHeight
+      );
+
+      camera.position.set(0, 0, 10);
+
+      // RENDERER
+      const renderer = new THREE.WebGLRenderer();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.shadowMap.enabled = true;
+      document.body.appendChild(renderer.domElement);
+
+      // Lights
+      const hemispherelight = new THREE.HemisphereLight(0xffffbb, 0x080820, 1);
+      //scene.add(hemispherelight);
+
+      const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+      directionalLight.position.set(1, 5, -1);
+      directionalLight.castShadow = true;
+
+      const cube1Geometry = new THREE.BoxGeometry(1, 1, 1);
+      const cube1Material = new THREE.MeshPhongMaterial({ color: "aqua" });
+      const cube1 = new THREE.Mesh(cube1Geometry, cube1Material);
+      cube1.castShadow = true;
+      cube1.position.set(3, 0, 0);
+
+      let cube1BB = new THREE.Box3();
+      cube1BB.setFromObject(cube1);
+      //console.log(cube1BB);
+
+      // const bb = new THREE.BoxGeometry(1.5, 1.5, 1.5);
+      // const object = new THREE.Mesh(bb, new THREE.MeshBasicMaterial(0xff0000));
+      // object.position.set(3, 0, 0);
+      // const box = new THREE.BoxHelper(object, 0xff0000);
+
+      const cube2Geometry = new THREE.BoxGeometry(1, 1, 1);
+      const cube2Material = new THREE.MeshPhongMaterial({ color: "coral" });
+      const cube2 = new THREE.Mesh(cube2Geometry, cube2Material);
+      cube2.position.set(-3, 0, 0);
+      cube2.castShadow = true;
+      //cube2.receiveShadow = true;
+
+      let cube2BB = new THREE.Box3();
+      cube2BB.setFromObject(cube2);
+
+      /**
+      const sphereGeometry = new THREE.SphereGeometry(1);
+      const sphereMaterial = new THREE.MeshPhongMaterial({ color: "teal" });
+      const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+      sphere.castShadow = true;
+      sphere.position.set(0, 0, 0);
+
+      let sphereBB = new THREE.Sphere(sphere.position, 1);
+      **/
+      
+      // Plane 
+
+      
+      const planeGeometry = new THREE.PlaneGeometry(256, 256);
+      const loader = new THREE.TextureLoader();
+
+      const height = loader.load('track2.png');
+      const track = loader.load('circuit.jpg');
+      const planeMaterial = new THREE.MeshStandardMaterial({ 
+        map: track,
+        displacementMap : height
+    
+      });
+
+      const plane = new THREE.Mesh(planeGeometry, planeMaterial);
+      plane.position.set(0, -0.5, 0);
+      plane.receiveShadow = true;
+      plane.rotateX(-Math.PI / 2);
+
+      // Adding to scene
+      scene.add(plane, hemispherelight, directionalLight);
+
+       let theBeastReference;  
+      const loaderGLTF = new GLTFLoader();
+      loaderGLTF.load("Models/theBeast.glb", function (gltf) {
+          let theBeast = gltf.scene;
+          theBeastReference = theBeast;
+          theBeast.scale.set(2.5, 2.5, 2.5);
+          theBeast.position.set(-5, 0, 68);
+          theBeast.rotation.y = 1.56;
+          scene.add(theBeast);
+        }
+      );
+      
+        let taxiReference;
+      loaderGLTF.load("Models/taxi.glb", function (gltf) {
+          let taxi = gltf.scene;
+          taxiReference = taxi;
+          taxi.scale.set(1.0, 1.0, 1.0);
+          taxi.position.set(-6, 0, 74);
+          taxi.rotation.y = 1.56;
+          scene.add(taxi);
+
+        
+        }
+      );
+        let teslaReference;
+      loaderGLTF.load("Models/teslaTruck.glb", function (gltf) {
+          let tesla = gltf.scene;
+          teslaReference = tesla;
+          tesla.scale.set(1.5, 1.5, 1.5);
+          tesla.position.set(-6, 3.5, 80);
+          tesla.rotation.y = 1.56;
+          scene.add(tesla);
+          
+        
+        }
+        
+      );
+
+      loaderGLTF.load("Models/streetlamp.glb", function (gltf) {    //streetlamp 1
+        let streetlamp = gltf.scene;
+        streetlamp.scale.set(0.1,0.2,0.1);
+        streetlamp.position.set(10, 0, -60);
+        scene.add(streetlamp);
+      });
+
+      loaderGLTF.load("Models/streetlamp.glb", function (gltf) {    //streetlamp 2
+        let streetlamp = gltf.scene;
+        streetlamp.scale.set(0.1,0.2,0.1);
+        streetlamp.rotation.y = 135;
+        streetlamp.position.set(10, 0, 60);
+        scene.add(streetlamp);
+      });
+
+      loaderGLTF.load("Models/streetlamp.glb", function (gltf) {    //streetlamp 3
+        let streetlamp = gltf.scene;
+        streetlamp.scale.set(0.1,0.2,0.1);
+        streetlamp.rotation.y = 225;
+        streetlamp.position.set(75, 0, 0);
+        scene.add(streetlamp);
+      });
+
+      loaderGLTF.load("Models/streetlamp.glb", function (gltf) {    //streetlamp 4
+        let streetlamp = gltf.scene;
+        streetlamp.scale.set(0.1,0.2,0.1);
+        streetlamp.rotation.y = -225;
+        streetlamp.position.set(-75, 0, 0);
+        scene.add(streetlamp);
+      });
+
+      loaderGLTF.load("Models/arbol1.glb", function (gltf) {    //arbol 1
+        let arbol1 = gltf.scene;
+        arbol1.scale.set(7.0,7.0,7.0);
+        arbol1.rotation.y = 0;
+        arbol1.position.set(50, 0, 100);
+        scene.add(arbol1);
+      });
+
+      loaderGLTF.load("Models/arbol2.glb", function (gltf) {    //arbol 2
+        let arbol2 = gltf.scene;
+        arbol2.scale.set(4.0,6.0,4.0);
+        arbol2.rotation.y = 0;
+        arbol2.position.set(-70, 0, -50);
+        scene.add(arbol2);
+      });
+
+      loaderGLTF.load("Models/arbol3.glb", function (gltf) {    //arbol 3
+        let arbol3 = gltf.scene;
+        arbol3.scale.set(5.0,5.0,5.0);
+        arbol3.rotation.y = 0;
+        arbol3.position.set(60, 0, -100);
+        scene.add(arbol3);
+      });
+
+      loaderGLTF.load("Models/arbol4.glb", function (gltf) {    //arbol 4
+        let arbol4 = gltf.scene;
+        arbol4.scale.set(15.0,20.0,15.0);
+        arbol4.rotation.y = 0;
+        arbol4.position.set(130, 12, 35);
+        scene.add(arbol4);
+      });
+
+      loaderGLTF.load("Models/arbol5.glb", function (gltf) {    //arbol 5
+        let arbol5 = gltf.scene;
+        arbol5.scale.set(10.0,10.0,10.0);
+        arbol5.rotation.y = 0;
+        arbol5.position.set(-70, 0, 30);
+        scene.add(arbol5);
+      });
+
+      loaderGLTF.load("Models/arbol6.glb", function (gltf) {    //arbol 6
+        let arbol6 = gltf.scene;
+        arbol6.scale.set(10.0,10.0,10.0);
+        arbol6.rotation.y = 0;
+        arbol6.position.set(75, 6.4, -30);
+        scene.add(arbol6);
+      });
+
+
+      loaderGLTF.load("Models/arbol7.glb", function (gltf) {    //arbol 7
+        let arbol7 = gltf.scene;
+        arbol7.scale.set(15.0,15.0,15.0);
+        arbol7.rotation.y = 0;
+        arbol7.position.set(-50, 9, -100);
+        scene.add(arbol7);
+      });
+
+      loaderGLTF.load("Models/arbol8.glb", function (gltf) {    //arbol 8
+        let arbol8 = gltf.scene;
+        arbol8.scale.set(14.0,14.0,14.0);
+        arbol8.rotation.y = 0;
+        arbol8.position.set(-80, 8, 100);
+        scene.add(arbol8);
+      });
+
+      loaderGLTF.load("Models/arbol9.glb", function (gltf) {    //arbol 9
+        let arbol9 = gltf.scene;
+        arbol9.scale.set(10.0,10.0,10.0);
+        arbol9.rotation.y = 0;
+        arbol9.position.set(30, 6, 30);
+        scene.add(arbol9);
+      });
+
+      loaderGLTF.load("Models/arbol10.glb", function (gltf) {    //arbol 10
+        let arbol9 = gltf.scene;
+        arbol9.scale.set(10.0,10.0,10.0);
+        arbol9.rotation.y = 0;
+        arbol9.position.set(90, 5.5, -80);
+        scene.add(arbol9);
+      });
+
+     document.onkeydown = function (e) {
+       
+        //La Bestia
+        //left
+        if (e.keyCode === 37) {
+          theBeastReference.position.x -= 1;
+        }
+        //up
+        if (e.keyCode === 38) {
+          theBeastReference.position.z -= 1;
+        }
+        //right
+        if (e.keyCode === 39) {
+          theBeastReference.position.x += 1;
+        }
+        //down
+        if (e.keyCode === 40) {
+          theBeastReference.position.z += 1;
+        }
+
+          //taxi
+        //left
+        if (e.keyCode === 65) {
+          taxiReference.position.x -= 1;
+        }
+        //up
+        if (e.keyCode === 87) {
+          taxiReference.position.z -= 1;
+        }
+        //right
+        if (e.keyCode === 68) {
+          taxiReference.position.x += 1;
+        }
+        //down
+        if (e.keyCode === 83) {
+          taxiReference.position.z += 1;
+        }
+
+      };
+
+      const cameraControl = new OrbitControls(camera, renderer.domElement);
+
+      function checkCollisions() {
+
+        /**
+        if (cube2BB.intersectsSphere(sphereBB)) {
+          sphere.material.wireframe = true;
+        } else {
+          sphere.material.wireframe = false;
+        }
+        **/
+
+        if (cube2BB.containsBox(cube1BB)) {
+          cube1.scale.y = 3;
+        } else {
+          cube1.scale.y = 1;
+        }
+
+        if (cube2BB.intersectsBox(cube1BB)) {
+          cube1.material.color = new THREE.Color("red");
+        } else {
+          cube1.material.color = new THREE.Color("aqua");
+        }
+      }
+
+      // Resize
+
+      function resize() {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.render(scene, camera);
+      }
+
+      window.addEventListener("resize", resize);
+
+    
+
+      function animate() {
+        cube2BB
+          .copy(cube2.geometry.boundingBox)
+          .applyMatrix4(cube2.matrixWorld);
+        checkCollisions();
+        renderer.render(scene, camera);
+        requestAnimationFrame(animate);
+      }
+
+      animate();
+    </script>
+  </body>
+</html>
