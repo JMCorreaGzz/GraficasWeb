@@ -143,6 +143,20 @@
       cube2.position.set(-6, 2, 74);
       cube2.castShadow = true;
 
+      //Cubo3(star)
+      const cube3Geometry = new THREE.BoxGeometry(3, 3, 3);
+      const cube3Material = new THREE.MeshPhongMaterial({ color: "blue", wireframe: true});
+      const cube3 = new THREE.Mesh(cube3Geometry, cube3Material);
+      cube3.position.set(90, 4, 0);
+      cube3.castShadow = true;
+
+      //Cubo4(ball)
+      const cube4Geometry = new THREE.BoxGeometry(3, 3, 3);
+      const cube4Material = new THREE.MeshPhongMaterial({ color: "blue", wireframe: true});
+      const cube4 = new THREE.Mesh(cube4Geometry, cube4Material);
+      cube4.position.set(95, 4, 40);
+      cube4.castShadow = true;
+
       //----------------------------Colisiones------------------------------
       //Cubo1(theBeast)
       let cube1BB = new THREE.Box3();
@@ -151,6 +165,15 @@
       //Cubo1(theBeast)
       let cube2BB = new THREE.Box3();
       cube2BB.setFromObject(cube2);
+
+      //Cubo3(star)
+      let cube3BB = new THREE.Box3();
+      cube3BB.setFromObject(cube3);
+
+      //Cubo4(ball)
+      let cube4BB = new THREE.Box3();
+      cube4BB.setFromObject(cube4);
+
 
       //---------------------------------------------------------------------
       // Plane
@@ -170,7 +193,7 @@
       plane.rotateX(-Math.PI / 2);
 
       // Adding to scene
-      scene.add(cube1, cube2, plane, hemispherelight, directionalLight);
+      scene.add(cube1, cube2, cube3, cube4, plane, hemispherelight, directionalLight);
 
       let theBeastReference;
       const loaderGLTF = new GLTFLoader();
@@ -205,6 +228,24 @@
       let followCam = new THREE.Object3D();
       followCam.position.copy(camera.position);
       scene.add(followCam);
+
+      let starReference;
+      loaderGLTF.load("Models/star.glb", function (gltf) {          //star
+        let star = gltf.scene;
+        starReference = star;
+        star.scale.set(1, 1, 1);
+        star.position.set(90, 4, 0);
+        scene.add(star);
+      });
+
+      let ballReference;
+      loaderGLTF.load("Models/BowlingBall.glb", function (gltf) {          //bowlingBall
+        let ball = gltf.scene;
+        ballReference = ball;
+        ball.scale.set(20, 20, 20);
+        ball.position.set(95, 4, 40);
+        scene.add(ball);
+      });
 
       loaderGLTF.load("Models/streetlamp.glb", function (gltf) {
         //streetlamp 1
@@ -336,6 +377,19 @@
       let orientacionTaxi = 0;
       //Velocidad
       let vel = 0;
+      let withBall = 0.1;
+      let withStar = 0.7
+        //Objetos
+        let starStatus = "";
+        let starTiming = 0;
+        let starTakedBy = "";
+
+        let ballStatus = "";
+        let ballTiming = 0;
+        let ballTakedBy = "";
+
+        //Anim
+        let arriba = true;
 
       document.onkeydown = function (e) {
         //La Bestia
@@ -370,7 +424,7 @@
           taxiReference.rotation.y += Math.PI / 2;
           cube2.rotation.y += Math.PI / 2;
           orientacionTaxi += 90;
-          vel = 0.1;
+          vel = 0.3;
           //a
         }
         //up
@@ -378,14 +432,14 @@
           //taxiReference.rotation.y = 3.2;
           //cube2.rotation.y = 4.75;
           //orientacionTaxi = "w";
-          vel = 0.1;
+          vel = 0.3;
         }
         //right
         if (e.keyCode === 68) {
           taxiReference.rotation.y -= Math.PI / 2;
           cube2.rotation.y -= Math.PI / 2;
           orientacionTaxi -= 90;
-          vel = 0.1;
+          vel = 0.3;
           //d
         }
         //down
@@ -393,7 +447,7 @@
           taxiReference.rotation.y -= Math.PI;
           cube2.rotation.y -= Math.PI;
           orientacionTaxi -= 180;
-          vel = 0.1;
+          vel = 0.3;
           //s
         }
         //freno
@@ -410,10 +464,41 @@
       const cameraControl = new OrbitControls(camera, renderer.domElement);
 
       function checkCollisions() {
+
         if (cube2BB.intersectsBox(cube1BB)) {
           cube1.material.color = new THREE.Color("red");
         } else {
           cube1.material.color = new THREE.Color("aqua");
+        }
+
+        
+        //Star 
+        if(cube1BB.intersectsBox(cube3BB)){
+
+          vel = withStar;
+          starStatus = "taked";
+          starTakedBy = "TheBeast";
+        }
+        if(cube2BB.intersectsBox(cube3BB)){
+          vel = withStar;
+          starStatus = "taked";
+          starTakedBy = "Taxi";
+
+        }
+
+        //Ball 
+        if(cube1BB.intersectsBox(cube4BB)){
+
+          vel = withBall;
+          ballStatus = "taked";
+          ballTakedBy = "TheBeast";
+            
+        }if(cube2BB.intersectsBox(cube4BB)){
+
+          vel = withBall;
+          ballStatus = "taked";
+          ballTakedBy = "Taxi"; 
+
         }
       }
 
@@ -474,7 +559,7 @@
           followCam.parent = taxiReference;
           camera.position.lerp(
             followCam.getWorldPosition(new THREE.Vector3()),
-            0.01
+            0.03
           );
           camera.lookAt(taxiReference.position);
         }
@@ -515,6 +600,44 @@
         });
       });
 
+      //Rotación de los objetos y desaparición
+      function objectsAnimation(){
+        
+        starReference.rotation.y += 0.01;
+
+        if(arriba == true){
+          starReference.position.y += 0.1;
+          cube3.position.y += 0.1;
+          if(starReference.position.y > 15){
+            arriba = false;
+          }
+        }else{
+
+          starReference.position.y -= 0.1;
+          cube3.position.y -= 0.1;
+          if(starReference.position.y < 4){
+            arriba = true;
+          }
+        }
+        
+        if(starStatus == "taked"){
+          if(starReference.position.y > -4){
+            starReference.position.y -= 0.2;
+            cube3.position.y -= 0.5;
+          }
+        }
+
+        ballReference.rotation.y += 0.01;
+
+        if(ballStatus == "taked"){
+          if(ballReference.position.y > -4){
+            ballReference.position.y -= 0.2;
+            cube4.position.y -= 0.5;
+          }
+        }
+            
+      }
+
       function animate() {
         cube2BB
           .copy(cube2.geometry.boundingBox)
@@ -526,6 +649,7 @@
         renderer.render(scene, camera);
         requestAnimationFrame(animate);
         movimiento();
+        objectsAnimation();
         updateCamera();
       }
 
