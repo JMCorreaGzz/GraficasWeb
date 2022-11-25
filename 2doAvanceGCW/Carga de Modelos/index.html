@@ -12,15 +12,90 @@
     </style>
   </head>
   <body>
-    <script type="module">
+    <button id="button-login">Login Google</button>
+    <button id="button-logout">Logout</button>
 
-      import * as THREE from './js/three.module.js';
+    <script type="module">
+      import * as THREE from "./js/three.module.js";
       import { OrbitControls } from "./js/OrbitControls.js";
       import { GLTFLoader } from "./js/GLTFLoader.js";
       import { STLLoader } from "./js/STLLoader.js";
       //import {FBXLoader} from "./FBXLoader.js";
-      import {OBJLoader} from "./js/OBJLoader.js";
+      import { OBJLoader } from "./js/OBJLoader.js";
       //import {MTLLoader} from "./MTLLoader.js";
+
+      // Import the functions you need from the SDKs you need
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/9.14.0/firebase-app.js";
+      import {
+        getAuth,
+        signInWithPopup,
+        GoogleAuthProvider,
+        signOut,
+      } from "https://www.gstatic.com/firebasejs/9.14.0/firebase-auth.js";
+      import {
+        getDatabase,
+        ref,
+        onValue,
+      } from "https://www.gstatic.com/firebasejs/9.14.0/firebase-database.js";
+
+      // Your web app's Firebase configuration
+      const firebaseConfig = {
+        apiKey: "AIzaSyD3femtx5cdAxoqups15m_2YEOqWfoP1kY",
+        authDomain: "pia-gcw.firebaseapp.com",
+        databaseURL: "https://pia-gcw-default-rtdb.firebaseio.com",
+        projectId: "pia-gcw",
+        storageBucket: "pia-gcw.appspot.com",
+        messagingSenderId: "41032725572",
+        appId: "1:41032725572:web:5cf1b445663bfbc02db811",
+      };
+
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth();
+      auth.languageCode = "es";
+      const provider = new GoogleAuthProvider();
+
+      let currentUser;
+      async function login() {
+        await signInWithPopup(auth, provider)
+          .then((result) => {
+            // This gives you a Google Access Token. You can use it to access the Google API.
+            const credential = GoogleAuthProvider.credentialFromResult(result);
+            const token = credential.accessToken;
+            // The signed-in user info.
+            currentUser = result.user;
+            console.log(currentUser);
+            // ...
+          })
+          .catch((error) => {
+            // Handle Errors here.
+            const errorCode = error.code;
+            const errorMessage = error.message;
+            // The email of the user's account used.
+            const email = error.customData.email;
+            // The AuthCredential type that was used.
+            const credential = GoogleAuthProvider.credentialFromError(error);
+            // ...
+            console.error("error");
+          });
+      }
+
+      const buttonLogin = document.getElementById("button-login");
+      const buttonLogout = document.getElementById("button-logout");
+      buttonLogin.addEventListener("click", async (e) => {
+        const user = await login();
+      });
+      buttonLogout.addEventListener("click", async (e) => {
+        await signOut(auth)
+          .then(() => {
+            // Sign-out successful.
+            console.log("Sign-out successful");
+          })
+          .catch((error) => {
+            // An error happened.
+            console.log("An error happened");
+          });
+      });
 
       // SCENE
       const scene = new THREE.Scene();
@@ -50,14 +125,20 @@
       //----------------------------Cubos para hacer las colisiones------------------------------
       //Cubo1(theBeast)
       const cube1Geometry = new THREE.BoxGeometry(10, 3, 5);
-      const cube1Material = new THREE.MeshPhongMaterial({ color: "aqua", wireframe: true});
+      const cube1Material = new THREE.MeshPhongMaterial({
+        color: "aqua",
+        wireframe: true,
+      });
       const cube1 = new THREE.Mesh(cube1Geometry, cube1Material);
       cube1.castShadow = true;
       cube1.position.set(-5, 2, 68);
 
       //Cubo1(taxi)
       const cube2Geometry = new THREE.BoxGeometry(11, 3, 4);
-      const cube2Material = new THREE.MeshPhongMaterial({ color: "coral", wireframe: true});
+      const cube2Material = new THREE.MeshPhongMaterial({
+        color: "coral",
+        wireframe: true,
+      });
       const cube2 = new THREE.Mesh(cube2Geometry, cube2Material);
       cube2.position.set(-6, 2, 74);
       cube2.castShadow = true;
@@ -72,16 +153,15 @@
       cube2BB.setFromObject(cube2);
 
       //---------------------------------------------------------------------
-      // Plane 
+      // Plane
       const planeGeometry = new THREE.PlaneGeometry(256, 256);
       const loader = new THREE.TextureLoader();
 
-      const height = loader.load('track2.png');
-      const track = loader.load('circuit.jpg');
-      const planeMaterial = new THREE.MeshStandardMaterial({ 
+      const height = loader.load("track2.png");
+      const track = loader.load("circuit.jpg");
+      const planeMaterial = new THREE.MeshStandardMaterial({
         map: track,
-        displacementMap : height
-    
+        displacementMap: height,
       });
 
       const plane = new THREE.Mesh(planeGeometry, planeMaterial);
@@ -92,188 +172,184 @@
       // Adding to scene
       scene.add(cube1, cube2, plane, hemispherelight, directionalLight);
 
-       let theBeastReference;  
+      let theBeastReference;
       const loaderGLTF = new GLTFLoader();
       loaderGLTF.load("Models/theBeast.glb", function (gltf) {
-          let theBeast = gltf.scene;
-          theBeastReference = theBeast;
-          theBeast.scale.set(2.5, 2.5, 2.5);
-          theBeast.position.set(-5, 0, 68);
-          theBeast.rotation.y = 1.56;
-          scene.add(theBeast);
-        }
-      );
+        let theBeast = gltf.scene;
+        theBeastReference = theBeast;
+        theBeast.scale.set(2.5, 2.5, 2.5);
+        theBeast.position.set(-5, 0, 68);
+        theBeast.rotation.y = 1.56;
+        scene.add(theBeast);
+      });
 
-        let taxiReference;
+      let taxiReference;
       loaderGLTF.load("Models/taxi.glb", function (gltf) {
-          let taxi = gltf.scene;
-          taxiReference = taxi;
-          taxi.scale.set(1.0, 1.0, 1.0);
-          taxi.position.set(-6, 0, 74);
-          taxi.rotation.y = 1.56;
-          scene.add(taxi);
-
-        
-        }
-      );
-        let teslaReference;
+        let taxi = gltf.scene;
+        taxiReference = taxi;
+        taxi.scale.set(1.0, 1.0, 1.0);
+        taxi.position.set(-6, 0, 74);
+        taxi.rotation.y = 1.56;
+        scene.add(taxi);
+      });
+      let teslaReference;
       loaderGLTF.load("Models/teslaTruck.glb", function (gltf) {
-          let tesla = gltf.scene;
-          teslaReference = tesla;
-          tesla.scale.set(1.5, 1.5, 1.5);
-          tesla.position.set(-6, 3.5, 80);
-          tesla.rotation.y = 1.56;
-          scene.add(tesla);
-          
-        
-        }
-        
-      );
+        let tesla = gltf.scene;
+        teslaReference = tesla;
+        tesla.scale.set(1.5, 1.5, 1.5);
+        tesla.position.set(-6, 3.5, 80);
+        tesla.rotation.y = 1.56;
+        scene.add(tesla);
+      });
 
       let followCam = new THREE.Object3D();
-		  followCam.position.copy(camera.position);
-		  scene.add(followCam);
-      if(theBeastReference){
-		    
-      }
+      followCam.position.copy(camera.position);
+      scene.add(followCam);
 
-      loaderGLTF.load("Models/streetlamp.glb", function (gltf) {    //streetlamp 1
+      loaderGLTF.load("Models/streetlamp.glb", function (gltf) {
+        //streetlamp 1
         let streetlamp = gltf.scene;
-        streetlamp.scale.set(0.1,0.2,0.1);
+        streetlamp.scale.set(0.1, 0.2, 0.1);
         streetlamp.position.set(10, 0, -60);
         scene.add(streetlamp);
       });
 
-      loaderGLTF.load("Models/streetlamp.glb", function (gltf) {    //streetlamp 2
+      loaderGLTF.load("Models/streetlamp.glb", function (gltf) {
+        //streetlamp 2
         let streetlamp = gltf.scene;
-        streetlamp.scale.set(0.1,0.2,0.1);
+        streetlamp.scale.set(0.1, 0.2, 0.1);
         streetlamp.rotation.y = 135;
         streetlamp.position.set(10, 0, 60);
         scene.add(streetlamp);
       });
 
-      loaderGLTF.load("Models/streetlamp.glb", function (gltf) {    //streetlamp 3
+      loaderGLTF.load("Models/streetlamp.glb", function (gltf) {
+        //streetlamp 3
         let streetlamp = gltf.scene;
-        streetlamp.scale.set(0.1,0.2,0.1);
+        streetlamp.scale.set(0.1, 0.2, 0.1);
         streetlamp.rotation.y = 225;
         streetlamp.position.set(75, 0, 0);
         scene.add(streetlamp);
       });
 
-      loaderGLTF.load("Models/streetlamp.glb", function (gltf) {    //streetlamp 4
+      loaderGLTF.load("Models/streetlamp.glb", function (gltf) {
+        //streetlamp 4
         let streetlamp = gltf.scene;
-        streetlamp.scale.set(0.1,0.2,0.1);
+        streetlamp.scale.set(0.1, 0.2, 0.1);
         streetlamp.rotation.y = -225;
         streetlamp.position.set(-75, 0, 0);
         scene.add(streetlamp);
       });
 
-      loaderGLTF.load("Models/arbol1.glb", function (gltf) {    //arbol 1
+      loaderGLTF.load("Models/arbol1.glb", function (gltf) {
+        //arbol 1
         let arbol1 = gltf.scene;
-        arbol1.scale.set(7.0,7.0,7.0);
+        arbol1.scale.set(7.0, 7.0, 7.0);
         arbol1.rotation.y = 0;
         arbol1.position.set(50, 0, 100);
         scene.add(arbol1);
       });
 
-      loaderGLTF.load("Models/arbol2.glb", function (gltf) {    //arbol 2
+      loaderGLTF.load("Models/arbol2.glb", function (gltf) {
+        //arbol 2
         let arbol2 = gltf.scene;
-        arbol2.scale.set(4.0,6.0,4.0);
+        arbol2.scale.set(4.0, 6.0, 4.0);
         arbol2.rotation.y = 0;
         arbol2.position.set(-70, 0, -50);
         scene.add(arbol2);
       });
 
-      loaderGLTF.load("Models/arbol3.glb", function (gltf) {    //arbol 3
+      loaderGLTF.load("Models/arbol3.glb", function (gltf) {
+        //arbol 3
         let arbol3 = gltf.scene;
-        arbol3.scale.set(5.0,5.0,5.0);
+        arbol3.scale.set(5.0, 5.0, 5.0);
         arbol3.rotation.y = 0;
         arbol3.position.set(60, 0, -100);
         scene.add(arbol3);
       });
 
-      loaderGLTF.load("Models/arbol4.glb", function (gltf) {    //arbol 4
+      loaderGLTF.load("Models/arbol4.glb", function (gltf) {
+        //arbol 4
         let arbol4 = gltf.scene;
-        arbol4.scale.set(15.0,20.0,15.0);
+        arbol4.scale.set(15.0, 20.0, 15.0);
         arbol4.rotation.y = 0;
         arbol4.position.set(130, 12, 35);
         scene.add(arbol4);
       });
 
-      loaderGLTF.load("Models/arbol5.glb", function (gltf) {    //arbol 5
+      loaderGLTF.load("Models/arbol5.glb", function (gltf) {
+        //arbol 5
         let arbol5 = gltf.scene;
-        arbol5.scale.set(10.0,10.0,10.0);
+        arbol5.scale.set(10.0, 10.0, 10.0);
         arbol5.rotation.y = 0;
         arbol5.position.set(-70, 0, 30);
         scene.add(arbol5);
       });
 
-      loaderGLTF.load("Models/arbol6.glb", function (gltf) {    //arbol 6
+      loaderGLTF.load("Models/arbol6.glb", function (gltf) {
+        //arbol 6
         let arbol6 = gltf.scene;
-        arbol6.scale.set(10.0,10.0,10.0);
+        arbol6.scale.set(10.0, 10.0, 10.0);
         arbol6.rotation.y = 0;
         arbol6.position.set(75, 6.4, -30);
         scene.add(arbol6);
       });
 
-
-      loaderGLTF.load("Models/arbol7.glb", function (gltf) {    //arbol 7
+      loaderGLTF.load("Models/arbol7.glb", function (gltf) {
+        //arbol 7
         let arbol7 = gltf.scene;
-        arbol7.scale.set(15.0,15.0,15.0);
+        arbol7.scale.set(15.0, 15.0, 15.0);
         arbol7.rotation.y = 0;
         arbol7.position.set(-50, 9, -100);
         scene.add(arbol7);
       });
 
-      loaderGLTF.load("Models/arbol8.glb", function (gltf) {    //arbol 8
+      loaderGLTF.load("Models/arbol8.glb", function (gltf) {
+        //arbol 8
         let arbol8 = gltf.scene;
-        arbol8.scale.set(14.0,14.0,14.0);
+        arbol8.scale.set(14.0, 14.0, 14.0);
         arbol8.rotation.y = 0;
         arbol8.position.set(-80, 8, 100);
         scene.add(arbol8);
       });
 
-      loaderGLTF.load("Models/arbol9.glb", function (gltf) {    //arbol 9
+      loaderGLTF.load("Models/arbol9.glb", function (gltf) {
+        //arbol 9
         let arbol9 = gltf.scene;
-        arbol9.scale.set(10.0,10.0,10.0);
+        arbol9.scale.set(10.0, 10.0, 10.0);
         arbol9.rotation.y = 0;
         arbol9.position.set(30, 6, 30);
         scene.add(arbol9);
       });
 
-      loaderGLTF.load("Models/arbol10.glb", function (gltf) {    //arbol 10
+      loaderGLTF.load("Models/arbol10.glb", function (gltf) {
+        //arbol 10
         let arbol9 = gltf.scene;
-        arbol9.scale.set(10.0,10.0,10.0);
+        arbol9.scale.set(10.0, 10.0, 10.0);
         arbol9.rotation.y = 0;
         arbol9.position.set(90, 5.5, -80);
         scene.add(arbol9);
       });
 
+      //Orientación de los autos
+      let orientacion = "";
+      let orientacionTaxi = 0;
+      //Velocidad
+      let vel = 0;
 
-        //Orientación de los autos
-        let orientacion = "";
-        let orientacionTaxi = "";
-        //Velocidad
-        let vel = 0.1;
-
-
-     document.onkeydown = function (e) {
-       
+      document.onkeydown = function (e) {
         //La Bestia
         //left
         if (e.keyCode === 37) {
-   
           theBeastReference.rotation.y = 11;
           cube1.rotation.y = 0;
           orientacion = "izq";
         }
         //up
         if (e.keyCode === 38) {
-
           theBeastReference.rotation.y = 3.2;
           cube1.rotation.y = 4.75;
           orientacion = "arr";
-
         }
         //right
         if (e.keyCode === 39) {
@@ -288,109 +364,98 @@
           orientacion = "aba";
         }
 
-          //taxi
+        //taxi
         //left
         if (e.keyCode === 65) {
-
-          taxiReference.rotation.y = 11;
-          cube2.rotation.y = 0;
-          orientacionTaxi = "a";
-
+          taxiReference.rotation.y += Math.PI / 2;
+          cube2.rotation.y += Math.PI / 2;
+          orientacionTaxi += 90;
+          vel = 0.1;
+          //a
         }
         //up
         if (e.keyCode === 87) {
-    
-          taxiReference.rotation.y = 3.2;
-          cube2.rotation.y = 4.75;
-          orientacionTaxi = "w";
-
-
+          //taxiReference.rotation.y = 3.2;
+          //cube2.rotation.y = 4.75;
+          //orientacionTaxi = "w";
+          vel = 0.1;
         }
         //right
         if (e.keyCode === 68) {
-
-          taxiReference.rotation.y = 1.56;
-          cube2.rotation.y = 0;
-          orientacionTaxi = "d"
-
+          taxiReference.rotation.y -= Math.PI / 2;
+          cube2.rotation.y -= Math.PI / 2;
+          orientacionTaxi -= 90;
+          vel = 0.1;
+          //d
         }
         //down
         if (e.keyCode === 83) {
-          
-          taxiReference.rotation.y = 0;
-          cube2.rotation.y = 4.75;
-          orientacionTaxi = "s";
-
-
+          taxiReference.rotation.y -= Math.PI;
+          cube2.rotation.y -= Math.PI;
+          orientacionTaxi -= 180;
+          vel = 0.1;
+          //s
         }
         //freno
-        if(e.keyCode === 70){
+        if (e.keyCode === 70) {
           orientacion = "f";
         }
-        if(e.keyCode === 66){
-          orientacionTaxi = "b";
+        if (e.keyCode === 66) {
+          //orientacionTaxi = 0;
+          vel = 0;
+          //b
         }
-
       };
 
       const cameraControl = new OrbitControls(camera, renderer.domElement);
 
       function checkCollisions() {
-
         if (cube2BB.intersectsBox(cube1BB)) {
           cube1.material.color = new THREE.Color("red");
         } else {
           cube1.material.color = new THREE.Color("aqua");
         }
-        
       }
 
-      function movimiento(){
+      function movimiento() {
         //The Beast
-        if(orientacion == "der"){
-
+        if (orientacion == "der") {
           theBeastReference.position.x += vel;
           cube1.position.x += vel;
-
-        }if(orientacion == "izq"){
+        }
+        if (orientacion == "izq") {
           theBeastReference.position.x -= vel;
           cube1.position.x -= vel;
-
-        }if(orientacion == "arr"){
-
+        }
+        if (orientacion == "arr") {
           theBeastReference.position.z -= vel;
           cube1.position.z -= vel;
-          
-        }if(orientacion == "aba"){
-
+        }
+        if (orientacion == "aba") {
           theBeastReference.position.z += vel;
           cube1.position.z += vel;
         }
 
         //Taxi
-        if(orientacionTaxi == "d"){
-
-          taxiReference.position.x += vel;
-          cube2.position.x += vel;
-
-        }if(orientacionTaxi == "a"){
-
-          taxiReference.position.x -= vel;
-          cube2.position.x -= vel;
-
-        }if(orientacionTaxi == "w"){
-
-          taxiReference.position.z -= vel;
-          cube2.position.z -= vel;
-
-        }if(orientacionTaxi == "s"){
-
-          taxiReference.position.z += vel;
-          cube2.position.z += vel;
-
+        if (taxiReference) {
+          var orientacionTaxiMod = orientacionTaxi % 360;
+          if (orientacionTaxiMod == 180 || orientacionTaxiMod == -180) {
+            taxiReference.position.x -= vel;
+            cube2.position.x -= vel;
+          }
+          if (orientacionTaxiMod == 0) {
+            taxiReference.position.x += vel;
+            cube2.position.x += vel;
+          }
+          if (orientacionTaxiMod == 90 || orientacionTaxiMod == -270) {
+            taxiReference.position.z -= vel;
+            cube2.position.z -= vel;
+          }
+          if (orientacionTaxiMod == 270 || orientacionTaxiMod == -90) {
+            taxiReference.position.z += vel;
+            cube2.position.z += vel;
+          }
         }
-
-
       }
 
       // Resize
@@ -404,19 +469,59 @@
 
       window.addEventListener("resize", resize);
 
-      function updateCamera(){
-        if(taxiReference){
+      function updateCamera() {
+        if (taxiReference) {
           followCam.parent = taxiReference;
-          camera.position.lerp(followCam.getWorldPosition(new THREE.Vector3()), 0.01);
-		      camera.lookAt(taxiReference.position);
+          camera.position.lerp(
+            followCam.getWorldPosition(new THREE.Vector3()),
+            0.01
+          );
+          camera.lookAt(taxiReference.position);
         }
       }
-    
+
+      const db = getDatabase();
+      const starCountRef = ref(db, "jugadores");
+      onValue(starCountRef, (snapshot) => {
+        const data = snapshot.val();
+        //console.log(data);
+        Object.entries(data).forEach(([key, value]) => {
+          const jugador = scene.getObjectByName(key);
+          if (!jugador) {
+            if (value.model == 1) {
+              let theBeastReference;
+              const loaderGLTF = new GLTFLoader();
+              loaderGLTF.load("Models/theBeast.glb", function (gltf) {
+                let theBeast = gltf.scene;
+                theBeastReference = theBeast;
+                theBeast.scale.set(2.5, 2.5, 2.5);
+                theBeast.position.set(-5, 0, 68);
+                theBeast.rotation.y = 1.56;
+                scene.add(theBeast);
+              });
+            } else if (value.model == 2) {
+              let taxiReference;
+              loaderGLTF.load("Models/taxi.glb", function (gltf) {
+                let taxi = gltf.scene;
+                taxiReference = taxi;
+                taxi.scale.set(1.0, 1.0, 1.0);
+                taxi.position.set(-6, 0, 74);
+                taxi.rotation.y = 1.56;
+                scene.add(taxi);
+              });
+            }
+            //Agregar a la escena
+          }
+        });
+      });
 
       function animate() {
-        
-        cube2BB.copy(cube2.geometry.boundingBox).applyMatrix4(cube2.matrixWorld);
-        cube1BB.copy(cube1.geometry.boundingBox).applyMatrix4(cube1.matrixWorld);
+        cube2BB
+          .copy(cube2.geometry.boundingBox)
+          .applyMatrix4(cube2.matrixWorld);
+        cube1BB
+          .copy(cube1.geometry.boundingBox)
+          .applyMatrix4(cube1.matrixWorld);
         checkCollisions();
         renderer.render(scene, camera);
         requestAnimationFrame(animate);
