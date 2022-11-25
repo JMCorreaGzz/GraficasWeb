@@ -407,7 +407,7 @@
       function updateCamera(){
         if(taxiReference){
           followCam.parent = taxiReference;
-          camera.position.lerp(followCam.getWorldPosition(new THREE.Vector3()), 0.05);
+          camera.position.lerp(followCam.getWorldPosition(new THREE.Vector3()), 0.01);
 		      camera.lookAt(taxiReference.position);
         }
       }
