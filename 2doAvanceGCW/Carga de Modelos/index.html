@@ -31,7 +31,7 @@
         window.innerWidth / window.innerHeight
       );
 
-      camera.position.set(0, 20, 120);
+      camera.position.set(0, 10, -20);
 
       // RENDERER
       const renderer = new THREE.WebGLRenderer();
@@ -129,6 +129,13 @@
         }
         
       );
+
+      let followCam = new THREE.Object3D();
+		  followCam.position.copy(camera.position);
+		  scene.add(followCam);
+      if(theBeastReference){
+		    
+      }
 
       loaderGLTF.load("Models/streetlamp.glb", function (gltf) {    //streetlamp 1
         let streetlamp = gltf.scene;
@@ -397,6 +404,13 @@
 
       window.addEventListener("resize", resize);
 
+      function updateCamera(){
+        if(taxiReference){
+          followCam.parent = taxiReference;
+          camera.position.lerp(followCam.getWorldPosition(new THREE.Vector3()), 0.05);
+		      camera.lookAt(taxiReference.position);
+        }
+      }
     
 
       function animate() {
@@ -407,6 +421,7 @@
         renderer.render(scene, camera);
         requestAnimationFrame(animate);
         movimiento();
+        updateCamera();
       }
 
       animate();
