@@ -36,6 +36,7 @@
         getDatabase,
         ref,
         onValue,
+        set,
       } from "https://www.gstatic.com/firebasejs/9.14.0/firebase-database.js";
 
       // Your web app's Firebase configuration
@@ -54,6 +55,9 @@
       const auth = getAuth();
       auth.languageCode = "es";
       const provider = new GoogleAuthProvider();
+      let theBeast;
+      let taxi;
+      let tesla;
 
       let currentUser;
       async function login() {
@@ -64,6 +68,17 @@
             const token = credential.accessToken;
             // The signed-in user info.
             currentUser = result.user;
+            var mainModel = 0;
+            if (!theBeast) {
+              mainModel = 1;
+            } else if (!taxi) {
+              mainModel = 2;
+            } else if (!tesla) {
+              mainModel = 3;
+            }
+            if (mainModel != 0) {
+              writeUserData(currentUser.uid, { x: 0, z: 0 }, mainModel);
+            }
             console.log(currentUser);
             // ...
           })
@@ -115,6 +130,7 @@
       document.body.appendChild(renderer.domElement);
 
       // Lights
+      const ambient = new THREE.AmbientLight(0x050505);
       const hemispherelight = new THREE.HemisphereLight(0xffffbb, 0x080820, 1);
       //scene.add(hemispherelight);
 
@@ -128,20 +144,44 @@
       const cube1Material = new THREE.MeshPhongMaterial({
         color: "aqua",
         wireframe: true,
+        visible: false,
       });
       const cube1 = new THREE.Mesh(cube1Geometry, cube1Material);
       cube1.castShadow = true;
       cube1.position.set(-5, 2, 68);
 
-      //Cubo1(taxi)
+      //Cubo2(taxi)
       const cube2Geometry = new THREE.BoxGeometry(11, 3, 4);
       const cube2Material = new THREE.MeshPhongMaterial({
         color: "coral",
         wireframe: true,
+        visible: false,
       });
       const cube2 = new THREE.Mesh(cube2Geometry, cube2Material);
       cube2.position.set(-6, 2, 74);
       cube2.castShadow = true;
+
+      //Cubo3(star)
+      const cube3Geometry = new THREE.BoxGeometry(3, 3, 3);
+      const cube3Material = new THREE.MeshPhongMaterial({
+        color: "blue",
+        wireframe: true,
+        visible: false,
+      });
+      const cube3 = new THREE.Mesh(cube3Geometry, cube3Material);
+      cube3.position.set(90, 4, 0);
+      cube3.castShadow = true;
+
+      //Cubo4(ball)
+      const cube4Geometry = new THREE.BoxGeometry(3, 3, 3);
+      const cube4Material = new THREE.MeshPhongMaterial({
+        color: "blue",
+        wireframe: true,
+        visible: false,
+      });
+      const cube4 = new THREE.Mesh(cube4Geometry, cube4Material);
+      cube4.position.set(95, 4, 40);
+      cube4.castShadow = true;
 
       //----------------------------Colisiones------------------------------
       //Cubo1(theBeast)
@@ -151,6 +191,14 @@
       //Cubo1(theBeast)
       let cube2BB = new THREE.Box3();
       cube2BB.setFromObject(cube2);
+
+      //Cubo3(star)
+      let cube3BB = new THREE.Box3();
+      cube3BB.setFromObject(cube3);
+
+      //Cubo4(ball)
+      let cube4BB = new THREE.Box3();
+      cube4BB.setFromObject(cube4);
 
       //---------------------------------------------------------------------
       // Plane
@@ -170,7 +218,16 @@
       plane.rotateX(-Math.PI / 2);
 
       // Adding to scene
-      scene.add(cube1, cube2, plane, hemispherelight, directionalLight);
+      scene.add(
+        cube1,
+        cube2,
+        cube3,
+        cube4,
+        plane,
+        ambient,
+        hemispherelight,
+        directionalLight
+      );
 
       let theBeastReference;
       const loaderGLTF = new GLTFLoader();
@@ -183,7 +240,7 @@
         scene.add(theBeast);
       });
 
-      let taxiReference;
+      /*let taxiReference;
       loaderGLTF.load("Models/taxi.glb", function (gltf) {
         let taxi = gltf.scene;
         taxiReference = taxi;
@@ -191,7 +248,7 @@
         taxi.position.set(-6, 0, 74);
         taxi.rotation.y = 1.56;
         scene.add(taxi);
-      });
+      });*/
       let teslaReference;
       loaderGLTF.load("Models/teslaTruck.glb", function (gltf) {
         let tesla = gltf.scene;
@@ -205,6 +262,26 @@
       let followCam = new THREE.Object3D();
       followCam.position.copy(camera.position);
       scene.add(followCam);
+
+      let starReference;
+      loaderGLTF.load("Models/star.glb", function (gltf) {
+        //star
+        let star = gltf.scene;
+        starReference = star;
+        star.scale.set(1, 1, 1);
+        star.position.set(90, 4, 0);
+        scene.add(star);
+      });
+
+      let ballReference;
+      loaderGLTF.load("Models/BowlingBall.glb", function (gltf) {
+        //bowlingBall
+        let ball = gltf.scene;
+        ballReference = ball;
+        ball.scale.set(20, 20, 20);
+        ball.position.set(95, 4, 40);
+        scene.add(ball);
+      });
 
       loaderGLTF.load("Models/streetlamp.glb", function (gltf) {
         //streetlamp 1
@@ -336,6 +413,19 @@
       let orientacionTaxi = 0;
       //Velocidad
       let vel = 0;
+      let withBall = 0.1;
+      let withStar = 0.3;
+      //Objetos
+      let starStatus = "";
+      let starTiming = 0;
+      let starTakedBy = "";
+
+      let ballStatus = "";
+      let ballTiming = 0;
+      let ballTakedBy = "";
+
+      //Anim
+      let arriba = true;
 
       document.onkeydown = function (e) {
         //La Bestia
@@ -365,12 +455,13 @@
         }
 
         //taxi
+        const oMesh = scene.getObjectByName(currentUser.uid);
         //left
         if (e.keyCode === 65) {
-          taxiReference.rotation.y += Math.PI / 2;
+          oMesh.rotation.y += Math.PI / 2;
           cube2.rotation.y += Math.PI / 2;
           orientacionTaxi += 90;
-          vel = 0.1;
+          vel = 0.2;
           //a
         }
         //up
@@ -378,22 +469,22 @@
           //taxiReference.rotation.y = 3.2;
           //cube2.rotation.y = 4.75;
           //orientacionTaxi = "w";
-          vel = 0.1;
+          vel = 0.2;
         }
         //right
         if (e.keyCode === 68) {
-          taxiReference.rotation.y -= Math.PI / 2;
+          oMesh.rotation.y -= Math.PI / 2;
           cube2.rotation.y -= Math.PI / 2;
           orientacionTaxi -= 90;
-          vel = 0.1;
+          vel = 0.2;
           //d
         }
         //down
         if (e.keyCode === 83) {
-          taxiReference.rotation.y -= Math.PI;
+          oMesh.rotation.y -= Math.PI;
           cube2.rotation.y -= Math.PI;
           orientacionTaxi -= 180;
-          vel = 0.1;
+          vel = 0.2;
           //s
         }
         //freno
@@ -414,6 +505,30 @@
           cube1.material.color = new THREE.Color("red");
         } else {
           cube1.material.color = new THREE.Color("aqua");
+        }
+
+        //Star
+        if (cube1BB.intersectsBox(cube3BB)) {
+          vel = withStar;
+          starStatus = "taked";
+          starTakedBy = "TheBeast";
+        }
+        if (cube2BB.intersectsBox(cube3BB)) {
+          vel = withStar;
+          starStatus = "taked";
+          starTakedBy = "Taxi";
+        }
+
+        //Ball
+        if (cube1BB.intersectsBox(cube4BB)) {
+          vel = withBall;
+          ballStatus = "taked";
+          ballTakedBy = "TheBeast";
+        }
+        if (cube2BB.intersectsBox(cube4BB)) {
+          vel = withBall;
+          ballStatus = "taked";
+          ballTakedBy = "Taxi";
         }
       }
 
@@ -437,22 +552,23 @@
         }
 
         //Taxi
-        if (taxiReference) {
+        const oMesh = scene.getObjectByName(currentUser.uid);
+        if (oMesh) {
           var orientacionTaxiMod = orientacionTaxi % 360;
           if (orientacionTaxiMod == 180 || orientacionTaxiMod == -180) {
-            taxiReference.position.x -= vel;
+            oMesh.position.x -= vel;
             cube2.position.x -= vel;
           }
           if (orientacionTaxiMod == 0) {
-            taxiReference.position.x += vel;
+            oMesh.position.x += vel;
             cube2.position.x += vel;
           }
           if (orientacionTaxiMod == 90 || orientacionTaxiMod == -270) {
-            taxiReference.position.z -= vel;
+            oMesh.position.z -= vel;
             cube2.position.z -= vel;
           }
           if (orientacionTaxiMod == 270 || orientacionTaxiMod == -90) {
-            taxiReference.position.z += vel;
+            oMesh.position.z += vel;
             cube2.position.z += vel;
           }
         }
@@ -470,13 +586,14 @@
       window.addEventListener("resize", resize);
 
       function updateCamera() {
-        if (taxiReference) {
-          followCam.parent = taxiReference;
+        const oMesh = scene.getObjectByName(currentUser.uid);
+        if (oMesh) {
+          followCam.parent = oMesh;
           camera.position.lerp(
             followCam.getWorldPosition(new THREE.Vector3()),
-            0.01
+            0.03
           );
-          camera.lookAt(taxiReference.position);
+          camera.lookAt(oMesh.position);
         }
       }
 
@@ -492,28 +609,86 @@
               let theBeastReference;
               const loaderGLTF = new GLTFLoader();
               loaderGLTF.load("Models/theBeast.glb", function (gltf) {
-                let theBeast = gltf.scene;
+                theBeast = gltf.scene;
                 theBeastReference = theBeast;
                 theBeast.scale.set(2.5, 2.5, 2.5);
                 theBeast.position.set(-5, 0, 68);
                 theBeast.rotation.y = 1.56;
+                theBeast.name = key;
                 scene.add(theBeast);
               });
             } else if (value.model == 2) {
               let taxiReference;
               loaderGLTF.load("Models/taxi.glb", function (gltf) {
-                let taxi = gltf.scene;
+                taxi = gltf.scene;
                 taxiReference = taxi;
                 taxi.scale.set(1.0, 1.0, 1.0);
                 taxi.position.set(-6, 0, 74);
                 taxi.rotation.y = 1.56;
+                taxi.name = key;
                 scene.add(taxi);
               });
+            } else if (value.model == 3) {
+              let teslaReference;
+              loaderGLTF.load("Models/teslaTruck.glb", function (gltf) {
+                tesla = gltf.scene;
+                teslaReference = tesla;
+                tesla.scale.set(1.5, 1.5, 1.5);
+                tesla.position.set(-6, 3.5, 80);
+                tesla.rotation.y = 1.56;
+                tesla.name = key;
+                scene.add(tesla);
+              });
             }
-            //Agregar a la escena
           }
         });
       });
+
+      function writeUserData(userId, position, model) {
+        const db = getDatabase();
+        set(ref(db, "jugadores/" + userId), {
+          x: position.x,
+          z: position.z,
+          model: model,
+        });
+      }
+
+      //Rotación de los objetos y desaparición
+      function objectsAnimation() {
+        starReference.rotation.y += 0.01;
+
+        if (arriba == true) {
+          starReference.position.y += 0.1;
+          cube3.position.y += 0.1;
+          if (starReference.position.y > 15) {
+            arriba = false;
+          }
+        } else {
+          starReference.position.y -= 0.1;
+          cube3.position.y -= 0.1;
+          if (starReference.position.y < 4) {
+            arriba = true;
+          }
+        }
+
+        if (starStatus == "taked") {
+          if (starReference.position.y > -4) {
+            starReference.position.y -= 0.2;
+            cube3.position.y -= 0.5;
+          }
+        }
+
+        if (ballReference) {
+          ballReference.rotation.y += 0.01;
+        }
+
+        if (ballStatus == "taked") {
+          if (ballReference.position.y > -4) {
+            ballReference.position.y -= 0.2;
+            cube4.position.y -= 0.5;
+          }
+        }
+      }
 
       function animate() {
         cube2BB
@@ -525,8 +700,13 @@
         checkCollisions();
         renderer.render(scene, camera);
         requestAnimationFrame(animate);
-        movimiento();
-        updateCamera();
+        if (currentUser) {
+          movimiento();
+          updateCamera();
+        }
+        if (starReference && ballReference) {
+          objectsAnimation();
+        }
       }
 
       animate();
