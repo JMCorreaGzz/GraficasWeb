@@ -94,6 +94,7 @@
               writeUserData(
                 currentUser.uid,
                 { x: playerPositionX, z: playerPositionZ },
+                1.56,
                 mainModel
               );
             }
@@ -662,14 +663,16 @@
           }
           scene.getObjectByName(key).position.x = value.x;
           scene.getObjectByName(key).position.z = value.z;
+          scene.getObjectByName(key).rotation.y = value.rotation;
         });
       });
 
-      function writeUserData(userId, position, model) {
+      function writeUserData(userId, position, rotation, model) {
         const db = getDatabase();
         set(ref(db, "jugadores/" + userId), {
           x: position.x,
           z: position.z,
+          rotation: rotation,
           model: model,
         });
       }
@@ -728,6 +731,7 @@
           writeUserData(
             currentUser.uid,
             { x: oMesh.position.x, z: oMesh.position.z },
+            oMesh.rotation.y,
             mainModel
           );
         }
