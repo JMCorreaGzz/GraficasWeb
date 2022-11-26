@@ -77,7 +77,21 @@
               mainModel = 3;
             }
             if (mainModel != 0) {
-              writeUserData(currentUser.uid, { x: 0, z: 0 }, mainModel);
+              let playerPositionX;
+              let playerPositionZ;
+              if(mainModel==1){
+                playerPositionX = -5;
+                playerPositionZ = 68;
+              }
+              if(mainModel==2){
+                playerPositionX = -6;
+                playerPositionZ = 74;
+              }
+              if(mainModel==3){
+                playerPositionX = -6;
+                playerPositionZ = 80;
+              }
+              writeUserData(currentUser.uid, { x: playerPositionX, z: playerPositionZ }, mainModel);
             }
             console.log(currentUser);
             // ...
@@ -87,9 +101,9 @@
             const errorCode = error.code;
             const errorMessage = error.message;
             // The email of the user's account used.
-            const email = error.customData.email;
+            //const email = error.customData.email;
             // The AuthCredential type that was used.
-            const credential = GoogleAuthProvider.credentialFromError(error);
+            //const credential = GoogleAuthProvider.credentialFromError(error);
             // ...
             console.error("error");
           });
@@ -229,7 +243,8 @@
         directionalLight
       );
 
-      let theBeastReference;
+      const loaderGLTF = new GLTFLoader();
+      /*let theBeastReference;
       const loaderGLTF = new GLTFLoader();
       loaderGLTF.load("Models/theBeast.glb", function (gltf) {
         let theBeast = gltf.scene;
@@ -240,7 +255,7 @@
         scene.add(theBeast);
       });
 
-      /*let taxiReference;
+      let taxiReference;
       loaderGLTF.load("Models/taxi.glb", function (gltf) {
         let taxi = gltf.scene;
         taxiReference = taxi;
@@ -248,7 +263,7 @@
         taxi.position.set(-6, 0, 74);
         taxi.rotation.y = 1.56;
         scene.add(taxi);
-      });*/
+      });
       let teslaReference;
       loaderGLTF.load("Models/teslaTruck.glb", function (gltf) {
         let tesla = gltf.scene;
@@ -257,7 +272,7 @@
         tesla.position.set(-6, 3.5, 80);
         tesla.rotation.y = 1.56;
         scene.add(tesla);
-      });
+      });*/
 
       let followCam = new THREE.Object3D();
       followCam.position.copy(camera.position);
