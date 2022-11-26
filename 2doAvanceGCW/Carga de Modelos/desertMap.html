@@ -12,6 +12,9 @@
     </style>
   </head>
   <body>
+    <button id="button-login">Login Google</button>
+    <button id="button-logout">Logout</button>
+
     <script type="module">
 
       import * as THREE from './js/three.module.js';
@@ -22,6 +25,78 @@
       import {OBJLoader} from "./js/OBJLoader.js";
       //import {MTLLoader} from "./MTLLoader.js";
 
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/9.14.0/firebase-app.js";
+      import {
+        getAuth,
+        signInWithPopup,
+        GoogleAuthProvider,
+        signOut,
+      } from "https://www.gstatic.com/firebasejs/9.14.0/firebase-auth.js";
+      import {
+        getDatabase,
+        ref,
+        onValue,
+      } from "https://www.gstatic.com/firebasejs/9.14.0/firebase-database.js";
+
+      // Your web app's Firebase configuration
+      const firebaseConfig = {
+        apiKey: "AIzaSyD3femtx5cdAxoqups15m_2YEOqWfoP1kY",
+        authDomain: "pia-gcw.firebaseapp.com",
+        databaseURL: "https://pia-gcw-default-rtdb.firebaseio.com",
+        projectId: "pia-gcw",
+        storageBucket: "pia-gcw.appspot.com",
+        messagingSenderId: "41032725572",
+        appId: "1:41032725572:web:5cf1b445663bfbc02db811",
+      };
+
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth();
+      auth.languageCode = "es";
+      const provider = new GoogleAuthProvider();
+
+      let currentUser;
+      async function login() {
+        await signInWithPopup(auth, provider)
+          .then((result) => {
+            // This gives you a Google Access Token. You can use it to access the Google API.
+            const credential = GoogleAuthProvider.credentialFromResult(result);
+            const token = credential.accessToken;
+            // The signed-in user info.
+            currentUser = result.user;
+            console.log(currentUser);
+            // ...
+          })
+          .catch((error) => {
+            // Handle Errors here.
+            const errorCode = error.code;
+            const errorMessage = error.message;
+            // The email of the user's account used.
+            const email = error.customData.email;
+            // The AuthCredential type that was used.
+            const credential = GoogleAuthProvider.credentialFromError(error);
+            // ...
+            console.error("error");
+          });
+      }
+
+      const buttonLogin = document.getElementById("button-login");
+      const buttonLogout = document.getElementById("button-logout");
+      buttonLogin.addEventListener("click", async (e) => {
+        const user = await login();
+      });
+      buttonLogout.addEventListener("click", async (e) => {
+        await signOut(auth)
+          .then(() => {
+            // Sign-out successful.
+            console.log("Sign-out successful");
+          })
+          .catch((error) => {
+            // An error happened.
+            console.log("An error happened");
+          });
+      });
+
       // SCENE
       const scene = new THREE.Scene();
       scene.background = new THREE.Color("#34495E");
@@ -31,7 +106,7 @@
         window.innerWidth / window.innerHeight
       );
 
-      camera.position.set(0, 0, 10);
+      camera.position.set(20, 20, -50);
 
       // RENDERER
       const renderer = new THREE.WebGLRenderer();
@@ -47,40 +122,36 @@
       directionalLight.position.set(1, 5, -1);
       directionalLight.castShadow = true;
 
-      const cube1Geometry = new THREE.BoxGeometry(1, 1, 1);
-      const cube1Material = new THREE.MeshPhongMaterial({ color: "aqua" });
+      //----------------------------Cubos para hacer las colisiones------------------------------
+      //Cubo1(theBeast)
+      const cube1Geometry = new THREE.BoxGeometry(10, 3, 5);
+      const cube1Material = new THREE.MeshPhongMaterial({
+        color: "aqua",
+        wireframe: true,
+      });
       const cube1 = new THREE.Mesh(cube1Geometry, cube1Material);
       cube1.castShadow = true;
-      cube1.position.set(3, 0, 0);
+      cube1.position.set(-5, 2, 68);
 
+      //Cubo1(taxi)
+      const cube2Geometry = new THREE.BoxGeometry(11, 3, 4);
+      const cube2Material = new THREE.MeshPhongMaterial({
+        color: "coral",
+        wireframe: true,
+      });
+      const cube2 = new THREE.Mesh(cube2Geometry, cube2Material);
+      cube2.position.set(-6, 2, 74);
+      cube2.castShadow = true;
+
+      //----------------------------Colisiones------------------------------
+      //Cubo1(theBeast)
       let cube1BB = new THREE.Box3();
       cube1BB.setFromObject(cube1);
-      //console.log(cube1BB);
 
-      // const bb = new THREE.BoxGeometry(1.5, 1.5, 1.5);
-      // const object = new THREE.Mesh(bb, new THREE.MeshBasicMaterial(0xff0000));
-      // object.position.set(3, 0, 0);
-      // const box = new THREE.BoxHelper(object, 0xff0000);
-
-      const cube2Geometry = new THREE.BoxGeometry(1, 1, 1);
-      const cube2Material = new THREE.MeshPhongMaterial({ color: "coral" });
-      const cube2 = new THREE.Mesh(cube2Geometry, cube2Material);
-      cube2.position.set(-3, 0, 0);
-      cube2.castShadow = true;
-      //cube2.receiveShadow = true;
-
+      //Cubo1(theBeast)
       let cube2BB = new THREE.Box3();
       cube2BB.setFromObject(cube2);
 
-      /**
-      const sphereGeometry = new THREE.SphereGeometry(1);
-      const sphereMaterial = new THREE.MeshPhongMaterial({ color: "teal" });
-      const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
-      sphere.castShadow = true;
-      sphere.position.set(0, 0, 0);
-
-      let sphereBB = new THREE.Sphere(sphere.position, 1);
-      **/
       
       // Plane 
 
@@ -141,37 +212,10 @@
         }
         
       );
-
-      /*loaderGLTF.load("Models/streetlamp.glb", function (gltf) {    //streetlamp 1
-        let streetlamp = gltf.scene;
-        streetlamp.scale.set(0.1,0.2,0.1);
-        streetlamp.position.set(10, 0, -60);
-        scene.add(streetlamp);
-      });
-
-      loaderGLTF.load("Models/streetlamp.glb", function (gltf) {    //streetlamp 2
-        let streetlamp = gltf.scene;
-        streetlamp.scale.set(0.1,0.2,0.1);
-        streetlamp.rotation.y = 135;
-        streetlamp.position.set(10, 0, 60);
-        scene.add(streetlamp);
-      });
-
-      loaderGLTF.load("Models/streetlamp.glb", function (gltf) {    //streetlamp 3
-        let streetlamp = gltf.scene;
-        streetlamp.scale.set(0.1,0.2,0.1);
-        streetlamp.rotation.y = 225;
-        streetlamp.position.set(75, 0, 0);
-        scene.add(streetlamp);
-      });
-
-      loaderGLTF.load("Models/streetlamp.glb", function (gltf) {    //streetlamp 4
-        let streetlamp = gltf.scene;
-        streetlamp.scale.set(0.1,0.2,0.1);
-        streetlamp.rotation.y = -225;
-        streetlamp.position.set(-75, 0, 0);
-        scene.add(streetlamp);
-      });*/
+  
+      let followCam = new THREE.Object3D();
+      followCam.position.copy(camera.position);
+      scene.add(followCam);
 
       loaderGLTF.load("Models/roca1.glb", function (gltf) {    //arbol 1
         let roca1 = gltf.scene;
@@ -278,71 +322,133 @@
         scene.add(arbol3);
       });
 
-     document.onkeydown = function (e) {
-       
+     //Orientación de los autos
+     let orientacion = "";
+      let orientacionTaxi = 0;
+      //Velocidad
+      let vel = 0;
+
+      document.onkeydown = function (e) {
         //La Bestia
         //left
         if (e.keyCode === 37) {
-          theBeastReference.position.x -= 1;
+          theBeastReference.rotation.y = 11;
+          cube1.rotation.y = 0;
+          orientacion = "izq";
         }
         //up
         if (e.keyCode === 38) {
-          theBeastReference.position.z -= 1;
+          theBeastReference.rotation.y = 3.2;
+          cube1.rotation.y = 4.75;
+          orientacion = "arr";
         }
         //right
         if (e.keyCode === 39) {
-          theBeastReference.position.x += 1;
+          theBeastReference.rotation.y = 1.56;
+          cube1.rotation.y = 0;
+          orientacion = "der";
         }
         //down
         if (e.keyCode === 40) {
-          theBeastReference.position.z += 1;
+          theBeastReference.rotation.y = 0;
+          cube1.rotation.y = 4.75;
+          orientacion = "aba";
         }
 
-          //taxi
+        //taxi
         //left
         if (e.keyCode === 65) {
-          taxiReference.position.x -= 1;
+          taxiReference.rotation.y += Math.PI / 2;
+          cube2.rotation.y += Math.PI / 2;
+          orientacionTaxi += 90;
+          vel = 0.1;
+          //a
         }
         //up
         if (e.keyCode === 87) {
-          taxiReference.position.z -= 1;
+          //taxiReference.rotation.y = 3.2;
+          //cube2.rotation.y = 4.75;
+          //orientacionTaxi = "w";
+          vel = 0.1;
         }
         //right
         if (e.keyCode === 68) {
-          taxiReference.position.x += 1;
+          taxiReference.rotation.y -= Math.PI / 2;
+          cube2.rotation.y -= Math.PI / 2;
+          orientacionTaxi -= 90;
+          vel = 0.1;
+          //d
         }
         //down
         if (e.keyCode === 83) {
-          taxiReference.position.z += 1;
+          taxiReference.rotation.y -= Math.PI;
+          cube2.rotation.y -= Math.PI;
+          orientacionTaxi -= 180;
+          vel = 0.1;
+          //s
         }
-
+        //freno
+        if (e.keyCode === 70) {
+          orientacion = "f";
+        }
+        if (e.keyCode === 66) {
+          //orientacionTaxi = 0;
+          vel = 0;
+          //b
+        }
       };
+
 
       const cameraControl = new OrbitControls(camera, renderer.domElement);
 
       function checkCollisions() {
-
-        
-       /* if (cube2BB.intersectsSphere(sphereBB)) {
-          sphere.material.wireframe = true;
-        } else {
-          sphere.material.wireframe = false;
-        }*/
-    
-
-        if (cube2BB.containsBox(cube1BB)) {
-          cube1.scale.y = 3;
-        } else {
-          cube1.scale.y = 1;
-        }
-
         if (cube2BB.intersectsBox(cube1BB)) {
           cube1.material.color = new THREE.Color("red");
         } else {
           cube1.material.color = new THREE.Color("aqua");
         }
-      } 
+      }
 
+      function movimiento() {
+        //The Beast
+        if (orientacion == "der") {
+          theBeastReference.position.x += vel;
+          cube1.position.x += vel;
+        }
+        if (orientacion == "izq") {
+          theBeastReference.position.x -= vel;
+          cube1.position.x -= vel;
+        }
+        if (orientacion == "arr") {
+          theBeastReference.position.z -= vel;
+          cube1.position.z -= vel;
+        }
+        if (orientacion == "aba") {
+          theBeastReference.position.z += vel;
+          cube1.position.z += vel;
+        }
+
+        //Taxi
+        if (taxiReference) {
+          var orientacionTaxiMod = orientacionTaxi % 360;
+          if (orientacionTaxiMod == 180 || orientacionTaxiMod == -180) {
+            taxiReference.position.x -= vel;
+            cube2.position.x -= vel;
+          }
+          if (orientacionTaxiMod == 0) {
+            taxiReference.position.x += vel;
+            cube2.position.x += vel;
+          }
+          if (orientacionTaxiMod == 90 || orientacionTaxiMod == -270) {
+            taxiReference.position.z -= vel;
+            cube2.position.z -= vel;
+          }
+          if (orientacionTaxiMod == 270 || orientacionTaxiMod == -90) {
+            taxiReference.position.z += vel;
+            cube2.position.z += vel;
+          }
+        }
+      }
       // Resize
 
       function resize() {
@@ -354,15 +460,64 @@
 
       window.addEventListener("resize", resize);
 
-    
+      function updateCamera() {
+        if (taxiReference) {
+          followCam.parent = taxiReference;
+          camera.position.lerp(
+            followCam.getWorldPosition(new THREE.Vector3()),
+            0.01
+          );
+          camera.lookAt(taxiReference.position);
+        }
+      }
+
+      const db = getDatabase();
+      const starCountRef = ref(db, "jugadores");
+      onValue(starCountRef, (snapshot) => {
+        const data = snapshot.val();
+        //console.log(data);
+        Object.entries(data).forEach(([key, value]) => {
+          const jugador = scene.getObjectByName(key);
+          if (!jugador) {
+            if (value.model == 1) {
+              let theBeastReference;
+              const loaderGLTF = new GLTFLoader();
+              loaderGLTF.load("Models/theBeast.glb", function (gltf) {
+                let theBeast = gltf.scene;
+                theBeastReference = theBeast;
+                theBeast.scale.set(2.5, 2.5, 2.5);
+                theBeast.position.set(-5, 0, 68);
+                theBeast.rotation.y = 1.56;
+                scene.add(theBeast);
+              });
+            } else if (value.model == 2) {
+              let taxiReference;
+              loaderGLTF.load("Models/taxi.glb", function (gltf) {
+                let taxi = gltf.scene;
+                taxiReference = taxi;
+                taxi.scale.set(1.0, 1.0, 1.0);
+                taxi.position.set(-6, 0, 74);
+                taxi.rotation.y = 1.56;
+                scene.add(taxi);
+              });
+            }
+            //Agregar a la escena
+          }
+        });
+      });
 
       function animate() {
         cube2BB
           .copy(cube2.geometry.boundingBox)
           .applyMatrix4(cube2.matrixWorld);
+        cube1BB
+          .copy(cube1.geometry.boundingBox)
+          .applyMatrix4(cube1.matrixWorld);
         checkCollisions();
         renderer.render(scene, camera);
         requestAnimationFrame(animate);
+        movimiento();
+        updateCamera();
       }
 
       animate();
