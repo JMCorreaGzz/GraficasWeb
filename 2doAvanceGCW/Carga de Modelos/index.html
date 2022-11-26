@@ -58,6 +58,7 @@
       let theBeast;
       let taxi;
       let tesla;
+      var mainModel = 0;
 
       let currentUser;
       async function login() {
@@ -68,7 +69,6 @@
             const token = credential.accessToken;
             // The signed-in user info.
             currentUser = result.user;
-            var mainModel = 0;
             if (!theBeast) {
               mainModel = 1;
             } else if (!taxi) {
@@ -79,19 +79,23 @@
             if (mainModel != 0) {
               let playerPositionX;
               let playerPositionZ;
-              if(mainModel==1){
+              if (mainModel == 1) {
                 playerPositionX = -5;
                 playerPositionZ = 68;
               }
-              if(mainModel==2){
+              if (mainModel == 2) {
                 playerPositionX = -6;
                 playerPositionZ = 74;
               }
-              if(mainModel==3){
+              if (mainModel == 3) {
                 playerPositionX = -6;
                 playerPositionZ = 80;
               }
-              writeUserData(currentUser.uid, { x: playerPositionX, z: playerPositionZ }, mainModel);
+              writeUserData(
+                currentUser.uid,
+                { x: playerPositionX, z: playerPositionZ },
+                mainModel
+              );
             }
             console.log(currentUser);
             // ...
@@ -656,6 +660,8 @@
               });
             }
           }
+          scene.getObjectByName(key).position.x = value.x;
+          scene.getObjectByName(key).position.z = value.z;
         });
       });
 
@@ -718,6 +724,12 @@
         if (currentUser) {
           movimiento();
           updateCamera();
+          const oMesh = scene.getObjectByName(currentUser.uid);
+          writeUserData(
+            currentUser.uid,
+            { x: oMesh.position.x, z: oMesh.position.z },
+            mainModel
+          );
         }
         if (starReference && ballReference) {
           objectsAnimation();
