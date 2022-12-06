@@ -142,6 +142,47 @@
 
       camera.position.set(0, 10, -20);
 
+      //MUSIC & SOUNDS
+      const listener = new THREE.AudioListener();
+      camera.add(listener);
+
+      const audioLoader = new THREE.AudioLoader();
+      const starLoader = new THREE.AudioLoader();
+      const ballLoader = new THREE.AudioLoader();
+
+      const backgroundSound = new THREE.Audio(listener);
+      const starSound = new THREE.Audio(listener);
+      const ballSound = new THREE.Audio(listener);
+
+      audioLoader.load('../Carga de Modelos/Sounds/background_music.ogg', function(buffer){
+
+        backgroundSound.setBuffer(buffer);
+
+        backgroundSound.setLoop(true);
+
+        backgroundSound.setVolume(.1);
+
+      });
+      starLoader.load('../Carga de Modelos/Sounds/spell2.wav', function(buffer){
+
+        starSound.setBuffer(buffer);
+
+        starSound.setLoop(false);
+
+        starSound.setVolume(.5);
+
+      });
+      ballLoader.load('../Carga de Modelos/Sounds/pacman_wakka.wav', function(buffer){
+
+        ballSound.setBuffer(buffer);
+
+        ballSound.setLoop(false);
+
+        ballSound.setVolume(.5);
+
+      });
+
+
       // RENDERER
       const renderer = new THREE.WebGLRenderer();
       renderer.setSize(window.innerWidth, window.innerHeight);
@@ -247,6 +288,7 @@
         hemispherelight,
         directionalLight
       );
+
 
       const loaderGLTF = new GLTFLoader();
       /*let theBeastReference;
@@ -490,6 +532,7 @@
           //cube2.rotation.y = 4.75;
           //orientacionTaxi = "w";
           vel = 0.2;
+          playMusic();
         }
         //right
         if (e.keyCode === 68) {
@@ -532,11 +575,14 @@
           vel = withStar;
           starStatus = "taked";
           starTakedBy = "TheBeast";
+          starSound.play();
         }
         if (cube2BB.intersectsBox(cube3BB)) {
           vel = withStar;
           starStatus = "taked";
           starTakedBy = "Taxi";
+          starSound.play();
+
         }
 
         //Ball
@@ -544,11 +590,13 @@
           vel = withBall;
           ballStatus = "taked";
           ballTakedBy = "TheBeast";
+          ballSound.play();
         }
         if (cube2BB.intersectsBox(cube4BB)) {
           vel = withBall;
           ballStatus = "taked";
           ballTakedBy = "Taxi";
+          ballSound.play();
         }
       }
 
@@ -675,6 +723,10 @@
           rotation: rotation,
           model: model,
         });
+      }
+
+      function playMusic(){
+        backgroundSound.play();
       }
 
       //Rotación de los objetos y desaparición
