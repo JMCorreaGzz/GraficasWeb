@@ -10,6 +10,16 @@
         margin: 0;
       }
     </style>
+
+    <script type="text/javascript">
+      function musicOn(){
+        var m = localStorage.getItem('musicOn');
+
+        return m;
+      }
+
+    </script>
+
   </head>
   <body>
     <button id="button-login">Login Google</button>
@@ -532,7 +542,18 @@
           //cube2.rotation.y = 4.75;
           //orientacionTaxi = "w";
           vel = 0.2;
-          playMusic();
+
+          if(musicOn() == "true"){
+
+            playMusic();
+            console.log("la música esta activa")
+
+          }else{
+
+            console.log("la música esta desactivada")
+
+          }
+
         }
         //right
         if (e.keyCode === 68) {
