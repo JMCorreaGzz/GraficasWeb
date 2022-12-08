@@ -12,14 +12,12 @@
     </style>
 
     <script type="text/javascript">
-      function musicOn(){
-        var m = localStorage.getItem('musicOn');
+      function musicOn() {
+        var m = localStorage.getItem("musicOn");
 
         return m;
       }
-
     </script>
-
   </head>
   <body>
     <button id="button-login">Login Google</button>
@@ -69,6 +67,8 @@
       let taxi;
       let tesla;
       var mainModel = 0;
+      var url = new URL(window.location.href)
+      var level = url.searchParams.get("level");
 
       let currentUser;
       async function login() {
@@ -164,34 +164,36 @@
       const starSound = new THREE.Audio(listener);
       const ballSound = new THREE.Audio(listener);
 
-      audioLoader.load('../Carga de Modelos/Sounds/background_music.ogg', function(buffer){
+      audioLoader.load(
+        "../Carga de Modelos/Sounds/background_music.ogg",
+        function (buffer) {
+          backgroundSound.setBuffer(buffer);
 
-        backgroundSound.setBuffer(buffer);
+          backgroundSound.setLoop(true);
 
-        backgroundSound.setLoop(true);
+          backgroundSound.setVolume(0.1);
+        }
+      );
+      starLoader.load(
+        "../Carga de Modelos/Sounds/spell2.wav",
+        function (buffer) {
+          starSound.setBuffer(buffer);
 
-        backgroundSound.setVolume(.1);
+          starSound.setLoop(false);
 
-      });
-      starLoader.load('../Carga de Modelos/Sounds/spell2.wav', function(buffer){
+          starSound.setVolume(0.5);
+        }
+      );
+      ballLoader.load(
+        "../Carga de Modelos/Sounds/pacman_wakka.wav",
+        function (buffer) {
+          ballSound.setBuffer(buffer);
 
-        starSound.setBuffer(buffer);
+          ballSound.setLoop(false);
 
-        starSound.setLoop(false);
-
-        starSound.setVolume(.5);
-
-      });
-      ballLoader.load('../Carga de Modelos/Sounds/pacman_wakka.wav', function(buffer){
-
-        ballSound.setBuffer(buffer);
-
-        ballSound.setLoop(false);
-
-        ballSound.setVolume(.5);
-
-      });
-
+          ballSound.setVolume(0.5);
+        }
+      );
 
       // RENDERER
       const renderer = new THREE.WebGLRenderer();
@@ -271,21 +273,6 @@
       cube4BB.setFromObject(cube4);
 
       //---------------------------------------------------------------------
-      // Plane
-      const planeGeometry = new THREE.PlaneGeometry(256, 256);
-      const loader = new THREE.TextureLoader();
-
-      const height = loader.load("track2.png");
-      const track = loader.load("circuit.jpg");
-      const planeMaterial = new THREE.MeshStandardMaterial({
-        map: track,
-        displacementMap: height,
-      });
-
-      const plane = new THREE.Mesh(planeGeometry, planeMaterial);
-      plane.position.set(0, -0.5, 0);
-      plane.receiveShadow = true;
-      plane.rotateX(-Math.PI / 2);
 
       // Adding to scene
       scene.add(
@@ -293,12 +280,10 @@
         cube2,
         cube3,
         cube4,
-        plane,
         ambient,
         hemispherelight,
         directionalLight
       );
-
 
       const loaderGLTF = new GLTFLoader();
       /*let theBeastReference;
@@ -335,6 +320,565 @@
       followCam.position.copy(camera.position);
       scene.add(followCam);
 
+      if (level == 1) {
+        // Plane
+        const planeGeometry = new THREE.PlaneGeometry(256, 256);
+        const loader = new THREE.TextureLoader();
+
+        const height = loader.load("track2.png");
+        const track = loader.load("circuit.jpg");
+        const planeMaterial = new THREE.MeshStandardMaterial({
+          map: track,
+          displacementMap: height,
+        });
+
+        const plane = new THREE.Mesh(planeGeometry, planeMaterial);
+        plane.position.set(0, -0.5, 0);
+        plane.receiveShadow = true;
+        plane.rotateX(-Math.PI / 2);
+
+        // Adding to scene
+        scene.add(plane);
+
+        loaderGLTF.load("Models/streetlamp.glb", function (gltf) {
+          //streetlamp 1
+          let streetlamp = gltf.scene;
+          streetlamp.scale.set(0.1, 0.2, 0.1);
+          streetlamp.position.set(10, 0, -60);
+          scene.add(streetlamp);
+        });
+
+        loaderGLTF.load("Models/streetlamp.glb", function (gltf) {
+          //streetlamp 2
+          let streetlamp = gltf.scene;
+          streetlamp.scale.set(0.1, 0.2, 0.1);
+          streetlamp.rotation.y = 135;
+          streetlamp.position.set(10, 0, 60);
+          scene.add(streetlamp);
+        });
+
+        loaderGLTF.load("Models/streetlamp.glb", function (gltf) {
+          //streetlamp 3
+          let streetlamp = gltf.scene;
+          streetlamp.scale.set(0.1, 0.2, 0.1);
+          streetlamp.rotation.y = 225;
+          streetlamp.position.set(75, 0, 0);
+          scene.add(streetlamp);
+        });
+
+        loaderGLTF.load("Models/streetlamp.glb", function (gltf) {
+          //streetlamp 4
+          let streetlamp = gltf.scene;
+          streetlamp.scale.set(0.1, 0.2, 0.1);
+          streetlamp.rotation.y = -225;
+          streetlamp.position.set(-75, 0, 0);
+          scene.add(streetlamp);
+        });
+
+        loaderGLTF.load("Models/arbol1.glb", function (gltf) {
+          //arbol 1
+          let arbol1 = gltf.scene;
+          arbol1.scale.set(7.0, 7.0, 7.0);
+          arbol1.rotation.y = 0;
+          arbol1.position.set(50, 0, 100);
+          scene.add(arbol1);
+        });
+
+        loaderGLTF.load("Models/arbol2.glb", function (gltf) {
+          //arbol 2
+          let arbol2 = gltf.scene;
+          arbol2.scale.set(4.0, 6.0, 4.0);
+          arbol2.rotation.y = 0;
+          arbol2.position.set(-70, 0, -50);
+          scene.add(arbol2);
+        });
+
+        loaderGLTF.load("Models/arbol3.glb", function (gltf) {
+          //arbol 3
+          let arbol3 = gltf.scene;
+          arbol3.scale.set(5.0, 5.0, 5.0);
+          arbol3.rotation.y = 0;
+          arbol3.position.set(60, 0, -100);
+          scene.add(arbol3);
+        });
+
+        loaderGLTF.load("Models/arbol4.glb", function (gltf) {
+          //arbol 4
+          let arbol4 = gltf.scene;
+          arbol4.scale.set(15.0, 20.0, 15.0);
+          arbol4.rotation.y = 0;
+          arbol4.position.set(130, 12, 35);
+          scene.add(arbol4);
+        });
+
+        loaderGLTF.load("Models/arbol5.glb", function (gltf) {
+          //arbol 5
+          let arbol5 = gltf.scene;
+          arbol5.scale.set(10.0, 10.0, 10.0);
+          arbol5.rotation.y = 0;
+          arbol5.position.set(-70, 0, 30);
+          scene.add(arbol5);
+        });
+
+        loaderGLTF.load("Models/arbol6.glb", function (gltf) {
+          //arbol 6
+          let arbol6 = gltf.scene;
+          arbol6.scale.set(10.0, 10.0, 10.0);
+          arbol6.rotation.y = 0;
+          arbol6.position.set(75, 6.4, -30);
+          scene.add(arbol6);
+        });
+
+        loaderGLTF.load("Models/arbol7.glb", function (gltf) {
+          //arbol 7
+          let arbol7 = gltf.scene;
+          arbol7.scale.set(15.0, 15.0, 15.0);
+          arbol7.rotation.y = 0;
+          arbol7.position.set(-50, 9, -100);
+          scene.add(arbol7);
+        });
+
+        loaderGLTF.load("Models/arbol8.glb", function (gltf) {
+          //arbol 8
+          let arbol8 = gltf.scene;
+          arbol8.scale.set(14.0, 14.0, 14.0);
+          arbol8.rotation.y = 0;
+          arbol8.position.set(-80, 8, 100);
+          scene.add(arbol8);
+        });
+
+        loaderGLTF.load("Models/arbol9.glb", function (gltf) {
+          //arbol 9
+          let arbol9 = gltf.scene;
+          arbol9.scale.set(10.0, 10.0, 10.0);
+          arbol9.rotation.y = 0;
+          arbol9.position.set(30, 6, 30);
+          scene.add(arbol9);
+        });
+
+        loaderGLTF.load("Models/arbol10.glb", function (gltf) {
+          //arbol 10
+          let arbol9 = gltf.scene;
+          arbol9.scale.set(10.0, 10.0, 10.0);
+          arbol9.rotation.y = 0;
+          arbol9.position.set(90, 5.5, -80);
+          scene.add(arbol9);
+        });
+      } else if (level == 2) {
+        // Plane
+
+        const planeGeometry = new THREE.PlaneGeometry(256, 256);
+        const loader = new THREE.TextureLoader();
+
+        const height = loader.load("track2.png");
+        const track = loader.load("desertTrack.jpg");
+        const planeMaterial = new THREE.MeshStandardMaterial({
+          map: track,
+          displacementMap: height,
+        });
+
+        const plane = new THREE.Mesh(planeGeometry, planeMaterial);
+        plane.position.set(0, -0.5, 0);
+        plane.receiveShadow = true;
+        plane.rotateX(-Math.PI / 2);
+
+        scene.add(plane);
+
+        loaderGLTF.load("Models/roca1.glb", function (gltf) {
+          //arbol 1
+          let roca1 = gltf.scene;
+          roca1.scale.set(7.0, 7.0, 7.0);
+          roca1.rotation.y = 0;
+          roca1.position.set(50, 0, 100);
+          scene.add(roca1);
+        });
+
+        loaderGLTF.load("Models/roca3.glb", function (gltf) {
+          //roca 2
+          let roca2 = gltf.scene;
+          roca2.scale.set(10.0, 12.0, 10.0);
+          roca2.rotation.y = 0;
+          roca2.position.set(80, 0, -80);
+          scene.add(roca2);
+        });
+
+        loaderGLTF.load("Models/roca4.glb", function (gltf) {
+          //roca 3
+          let roca3 = gltf.scene;
+          roca3.scale.set(15.0, 15.0, 15.0);
+          roca3.rotation.y = 0;
+          roca3.position.set(-150, 0, 100);
+          scene.add(roca3);
+        });
+
+        loaderGLTF.load("Models/roca5.glb", function (gltf) {
+          //roca 4
+          let roca4 = gltf.scene;
+          roca4.scale.set(15.0, 20.0, 15.0);
+          roca4.rotation.y = 0;
+          roca4.position.set(-90, 0, 50);
+          scene.add(roca4);
+        });
+
+        loaderGLTF.load("Models/roca6.glb", function (gltf) {
+          //roca 5
+          let roca5 = gltf.scene;
+          roca5.scale.set(20.0, 20.0, 20.0);
+          roca5.rotation.y = 0;
+          roca5.position.set(120, 0, 30);
+          scene.add(roca5);
+        });
+
+        loaderGLTF.load("Models/roca7.glb", function (gltf) {
+          //roca 6
+          let roca6 = gltf.scene;
+          roca6.scale.set(10.0, 10.0, 10.0);
+          roca6.rotation.y = 0;
+          roca6.position.set(75, 0, -30);
+          scene.add(roca6);
+        });
+
+        loaderGLTF.load("Models/roca8.glb", function (gltf) {
+          //roca 7
+          let roca7 = gltf.scene;
+          roca7.scale.set(15.0, 15.0, 15.0);
+          roca7.rotation.y = 0;
+          roca7.position.set(-75, 0, -120);
+          scene.add(roca7);
+        });
+
+        loaderGLTF.load("Models/roca9.glb", function (gltf) {
+          //roca 8
+          let roca8 = gltf.scene;
+          roca8.scale.set(20.0, 20.0, 20.0);
+          roca8.rotation.y = 0;
+          roca8.position.set(-80, 0, 80);
+          scene.add(roca8);
+        });
+
+        loaderGLTF.load("Models/roca10.glb", function (gltf) {
+          //roca 9
+          let roca9 = gltf.scene;
+          roca9.scale.set(5.0, 5.0, 5.0);
+          roca9.rotation.y = 0;
+          roca9.position.set(40, 0, 30);
+          scene.add(roca9);
+        });
+
+        loaderGLTF.load("Models/roca6.glb", function (gltf) {
+          //roca 10
+          let roca10 = gltf.scene;
+          roca10.scale.set(20.0, 20.0, 20.0);
+          roca10.rotation.y = 0;
+          roca10.position.set(150, 0, -80);
+          scene.add(roca10);
+        });
+
+        loaderGLTF.load("Models/arbol1.glb", function (gltf) {
+          //arbol 1
+          let arbol1 = gltf.scene;
+          arbol1.scale.set(5.0, 5.0, 5.0);
+          arbol1.rotation.y = 0;
+          arbol1.position.set(90, 0, 30);
+          scene.add(arbol1);
+        });
+
+        loaderGLTF.load("Models/arbol1.glb", function (gltf) {
+          //arbol 2
+          let arbol2 = gltf.scene;
+          arbol2.scale.set(5.0, 5.0, 5.0);
+          arbol2.rotation.y = 0;
+          arbol2.position.set(-80, 0, 20);
+          scene.add(arbol2);
+        });
+
+        loaderGLTF.load("Models/arbol1.glb", function (gltf) {
+          //arbol 3
+          let arbol3 = gltf.scene;
+          arbol3.scale.set(5.0, 5.0, 5.0);
+          arbol3.rotation.y = 0;
+          arbol3.position.set(40, 0, -100);
+          scene.add(arbol3);
+        });
+      } else if (level == 3) {
+        // Plane
+
+        const planeGeometry = new THREE.PlaneGeometry(256, 256);
+        const loader = new THREE.TextureLoader();
+
+        const height = loader.load("track2.png");
+        const track = loader.load("wasteLand.jpg");
+        const planeMaterial = new THREE.MeshStandardMaterial({
+          map: track,
+          displacementMap: height,
+        });
+
+        const plane = new THREE.Mesh(planeGeometry, planeMaterial);
+        plane.position.set(0, -0.5, 0);
+        plane.receiveShadow = true;
+        plane.rotateX(-Math.PI / 2);
+
+        // Adding to scene
+        scene.add(plane);
+
+        loaderGLTF.load("Models/streetlamp.glb", function (gltf) {
+          //streetlamp 1
+          let streetlamp = gltf.scene;
+          streetlamp.scale.set(0.1, 0.2, 0.1);
+          streetlamp.rotation.y = 90;
+          streetlamp.position.set(10, 0, -115);
+          scene.add(streetlamp);
+        });
+
+        loaderGLTF.load("Models/streetlamp.glb", function (gltf) {
+          //streetlamp 2
+          let streetlamp = gltf.scene;
+          streetlamp.scale.set(0.1, 0.2, 0.1);
+          streetlamp.rotation.y = 0;
+          streetlamp.position.set(10, 0, 110);
+          scene.add(streetlamp);
+        });
+
+        loaderGLTF.load("Models/streetlamp.glb", function (gltf) {
+          //streetlamp 3
+          let streetlamp = gltf.scene;
+          streetlamp.scale.set(0.1, 0.2, 0.1);
+          streetlamp.rotation.y = 90;
+          streetlamp.position.set(115, 0, 0);
+          scene.add(streetlamp);
+        });
+
+        loaderGLTF.load("Models/streetlamp.glb", function (gltf) {
+          //streetlamp 4
+          let streetlamp = gltf.scene;
+          streetlamp.scale.set(0.1, 0.2, 0.1);
+          streetlamp.rotation.y = 225;
+          streetlamp.position.set(-115, 0, 0);
+          scene.add(streetlamp);
+        });
+
+        loaderGLTF.load("Models/barrel.glb", function (gltf) {
+          //arbol
+
+          let barrel = gltf.scene;
+          barrel.scale.set(1.5, 1.5, 1.5);
+          barrel.rotation.y = 0;
+          barrel.position.set(-50, 2.5, 30);
+          scene.add(barrel);
+        });
+
+        loaderGLTF.load("Models/barrel.glb", function (gltf) {
+          //arbol
+
+          let barrel2 = gltf.scene;
+          barrel2.scale.set(1.5, 1.5, 1.5);
+          barrel2.rotation.y = 0;
+          barrel2.position.set(-30, 2.5, 20);
+          scene.add(barrel2);
+        });
+
+        loaderGLTF.load("Models/barrel.glb", function (gltf) {
+          //arbol
+
+          let barrel3 = gltf.scene;
+          barrel3.scale.set(1.5, 1.5, 1.5);
+          barrel3.rotation.y = 0;
+          barrel3.position.set(90, 2.5, -110);
+          scene.add(barrel3);
+        });
+
+        loaderGLTF.load("Models/barrel.glb", function (gltf) {
+          //arbol
+
+          let barrel = gltf.scene;
+          barrel.scale.set(1.5, 1.5, 1.5);
+          barrel.rotation.x = 0;
+          barrel.position.set(115, 2.5, -100);
+          scene.add(barrel);
+        });
+
+        loaderGLTF.load("Models/barrel.glb", function (gltf) {
+          //arbol
+
+          let barrel2 = gltf.scene;
+          barrel2.scale.set(1.5, 1.5, 1.5);
+          barrel2.rotation.x = 1.5708;
+          barrel2.position.set(110, 2.5, -120);
+          scene.add(barrel2);
+        });
+
+        loaderGLTF.load("Models/barrel.glb", function (gltf) {
+          //arbol
+
+          let barrel3 = gltf.scene;
+          barrel3.scale.set(1.5, 1.5, 1.5);
+          barrel3.rotation.x = 1.5708;
+          barrel3.position.set(-30, 2.5, 40);
+          scene.add(barrel3);
+        });
+
+        loaderGLTF.load("Models/stopSign.glb", function (gltf) {
+          //arbol 4
+          let barrier = gltf.scene;
+          barrier.scale.set(1.0, 1.0, 1.0);
+          barrier.rotation.y = 0;
+          barrier.position.set(75, 0, 45);
+          scene.add(barrier);
+        });
+
+        loaderGLTF.load("Models/cone2.glb", function (gltf) {
+          //arbol 5
+          let cone = gltf.scene;
+          cone.scale.set(1, 1, 1);
+          cone.rotation.y = 0;
+          cone.position.set(30, 0.5, 30);
+          scene.add(cone);
+        });
+
+        loaderGLTF.load("Models/cone2.glb", function (gltf) {
+          //arbol 5
+          let cone = gltf.scene;
+          cone.scale.set(1, 1, 1);
+          cone.rotation.y = 0;
+          cone.position.set(20, 0.5, 40);
+          scene.add(cone);
+        });
+
+        loaderGLTF.load("Models/cone2.glb", function (gltf) {
+          //arbol 5
+          let cone = gltf.scene;
+          cone.scale.set(1, 1, 1);
+          cone.rotation.y = 0;
+          cone.position.set(35, 0.5, 40);
+          scene.add(cone);
+        });
+
+        loaderGLTF.load("Models/cone2.glb", function (gltf) {
+          //arbol 5
+          let cone = gltf.scene;
+          cone.scale.set(1, 1, 1);
+          cone.rotation.x = 1.5708;
+          cone.position.set(70, 10, -70);
+          scene.add(cone);
+        });
+
+        loaderGLTF.load("Models/cone2.glb", function (gltf) {
+          //arbol 5
+          let cone = gltf.scene;
+          cone.scale.set(1, 1, 1);
+          cone.rotation.y = 0;
+          cone.position.set(60, 0.5, -80);
+          scene.add(cone);
+        });
+
+        loaderGLTF.load("Models/cone2.glb", function (gltf) {
+          //arbol 5
+          let cone = gltf.scene;
+          cone.scale.set(1, 1, 1);
+          cone.rotation.y = 0;
+          cone.position.set(50, 0.5, -80);
+          scene.add(cone);
+        });
+
+        loaderGLTF.load("Models/cone2.glb", function (gltf) {
+          //arbol 5
+          let cone = gltf.scene;
+          cone.scale.set(1, 1, 1);
+          cone.rotation.x = 1.5708;
+          cone.position.set(40, 10, -70);
+          scene.add(cone);
+        });
+
+        loaderGLTF.load("Models/cone2.glb", function (gltf) {
+          //arbol 5
+          let cone = gltf.scene;
+          cone.scale.set(1, 1, 1);
+          cone.rotation.y = 0;
+          cone.position.set(30, 0.5, -80);
+          scene.add(cone);
+        });
+
+        loaderGLTF.load("Models/cone2.glb", function (gltf) {
+          //arbol 5
+          let cone = gltf.scene;
+          cone.scale.set(1, 1, 1);
+          cone.rotation.y = 0;
+          cone.position.set(20, 0.5, -80);
+          scene.add(cone);
+        });
+        loaderGLTF.load("Models/cone2.glb", function (gltf) {
+          //arbol 5
+          let cone = gltf.scene;
+          cone.scale.set(1, 1, 1);
+          cone.rotation.x = 1.5708;
+          cone.position.set(10, 10, -70);
+          scene.add(cone);
+        });
+
+        loaderGLTF.load("Models/cone2.glb", function (gltf) {
+          //arbol 5
+          let cone = gltf.scene;
+          cone.scale.set(1, 1, 1);
+          cone.rotation.y = 0;
+          cone.position.set(0, 0.5, -80);
+          scene.add(cone);
+        });
+
+        loaderGLTF.load("Models/cone2.glb", function (gltf) {
+          //arbol 5
+          let cone = gltf.scene;
+          cone.scale.set(1, 1, 1);
+          cone.rotation.x = 1.5708;
+          cone.position.set(-10, 10.0, -70);
+          scene.add(cone);
+        });
+
+        loaderGLTF.load("Models/barrier.glb", function (gltf) {
+          //streetlamp 1
+          let barrier = gltf.scene;
+          barrier.scale.set(5.0, 5.0, 5.0);
+          barrier.position.set(-10, 0, 10);
+          barrier.rotation.y = 90;
+          scene.add(barrier);
+        });
+
+        loaderGLTF.load("Models/barrier.glb", function (gltf) {
+          //streetlamp 1
+          let barrier = gltf.scene;
+          barrier.scale.set(5.0, 5.0, 5.0);
+          barrier.position.set(-100, 0, 100);
+          barrier.rotation.y = 90;
+          scene.add(barrier);
+        });
+
+        loaderGLTF.load("Models/barrier.glb", function (gltf) {
+          //streetlamp 1
+          let barrier = gltf.scene;
+          barrier.scale.set(5.0, 5.0, 5.0);
+          barrier.position.set(-60, 0, 100);
+          barrier.rotation.y = 90;
+          scene.add(barrier);
+        });
+
+        loaderGLTF.load("Models/barrier.glb", function (gltf) {
+          //streetlamp 1
+          let barrier = gltf.scene;
+          barrier.scale.set(5.0, 5.0, 5.0);
+          barrier.position.set(-90, 0, 60);
+          barrier.rotation.y = 90;
+          scene.add(barrier);
+        });
+
+        loaderGLTF.load("Models/tank.glb", function (gltf) {
+          //streetlamp 1
+          let tank = gltf.scene;
+          tank.scale.set(20.0, 20.0, 20.0);
+          tank.position.set(-85, 0, 90);
+          tank.rotation.y = 0;
+          scene.add(tank);
+        });
+      }
+
       let starReference;
       loaderGLTF.load("Models/star.glb", function (gltf) {
         //star
@@ -353,131 +897,6 @@
         ball.scale.set(20, 20, 20);
         ball.position.set(95, 4, 40);
         scene.add(ball);
-      });
-
-      loaderGLTF.load("Models/streetlamp.glb", function (gltf) {
-        //streetlamp 1
-        let streetlamp = gltf.scene;
-        streetlamp.scale.set(0.1, 0.2, 0.1);
-        streetlamp.position.set(10, 0, -60);
-        scene.add(streetlamp);
-      });
-
-      loaderGLTF.load("Models/streetlamp.glb", function (gltf) {
-        //streetlamp 2
-        let streetlamp = gltf.scene;
-        streetlamp.scale.set(0.1, 0.2, 0.1);
-        streetlamp.rotation.y = 135;
-        streetlamp.position.set(10, 0, 60);
-        scene.add(streetlamp);
-      });
-
-      loaderGLTF.load("Models/streetlamp.glb", function (gltf) {
-        //streetlamp 3
-        let streetlamp = gltf.scene;
-        streetlamp.scale.set(0.1, 0.2, 0.1);
-        streetlamp.rotation.y = 225;
-        streetlamp.position.set(75, 0, 0);
-        scene.add(streetlamp);
-      });
-
-      loaderGLTF.load("Models/streetlamp.glb", function (gltf) {
-        //streetlamp 4
-        let streetlamp = gltf.scene;
-        streetlamp.scale.set(0.1, 0.2, 0.1);
-        streetlamp.rotation.y = -225;
-        streetlamp.position.set(-75, 0, 0);
-        scene.add(streetlamp);
-      });
-
-      loaderGLTF.load("Models/arbol1.glb", function (gltf) {
-        //arbol 1
-        let arbol1 = gltf.scene;
-        arbol1.scale.set(7.0, 7.0, 7.0);
-        arbol1.rotation.y = 0;
-        arbol1.position.set(50, 0, 100);
-        scene.add(arbol1);
-      });
-
-      loaderGLTF.load("Models/arbol2.glb", function (gltf) {
-        //arbol 2
-        let arbol2 = gltf.scene;
-        arbol2.scale.set(4.0, 6.0, 4.0);
-        arbol2.rotation.y = 0;
-        arbol2.position.set(-70, 0, -50);
-        scene.add(arbol2);
-      });
-
-      loaderGLTF.load("Models/arbol3.glb", function (gltf) {
-        //arbol 3
-        let arbol3 = gltf.scene;
-        arbol3.scale.set(5.0, 5.0, 5.0);
-        arbol3.rotation.y = 0;
-        arbol3.position.set(60, 0, -100);
-        scene.add(arbol3);
-      });
-
-      loaderGLTF.load("Models/arbol4.glb", function (gltf) {
-        //arbol 4
-        let arbol4 = gltf.scene;
-        arbol4.scale.set(15.0, 20.0, 15.0);
-        arbol4.rotation.y = 0;
-        arbol4.position.set(130, 12, 35);
-        scene.add(arbol4);
-      });
-
-      loaderGLTF.load("Models/arbol5.glb", function (gltf) {
-        //arbol 5
-        let arbol5 = gltf.scene;
-        arbol5.scale.set(10.0, 10.0, 10.0);
-        arbol5.rotation.y = 0;
-        arbol5.position.set(-70, 0, 30);
-        scene.add(arbol5);
-      });
-
-      loaderGLTF.load("Models/arbol6.glb", function (gltf) {
-        //arbol 6
-        let arbol6 = gltf.scene;
-        arbol6.scale.set(10.0, 10.0, 10.0);
-        arbol6.rotation.y = 0;
-        arbol6.position.set(75, 6.4, -30);
-        scene.add(arbol6);
-      });
-
-      loaderGLTF.load("Models/arbol7.glb", function (gltf) {
-        //arbol 7
-        let arbol7 = gltf.scene;
-        arbol7.scale.set(15.0, 15.0, 15.0);
-        arbol7.rotation.y = 0;
-        arbol7.position.set(-50, 9, -100);
-        scene.add(arbol7);
-      });
-
-      loaderGLTF.load("Models/arbol8.glb", function (gltf) {
-        //arbol 8
-        let arbol8 = gltf.scene;
-        arbol8.scale.set(14.0, 14.0, 14.0);
-        arbol8.rotation.y = 0;
-        arbol8.position.set(-80, 8, 100);
-        scene.add(arbol8);
-      });
-
-      loaderGLTF.load("Models/arbol9.glb", function (gltf) {
-        //arbol 9
-        let arbol9 = gltf.scene;
-        arbol9.scale.set(10.0, 10.0, 10.0);
-        arbol9.rotation.y = 0;
-        arbol9.position.set(30, 6, 30);
-        scene.add(arbol9);
-      });
-
-      loaderGLTF.load("Models/arbol10.glb", function (gltf) {
-        //arbol 10
-        let arbol9 = gltf.scene;
-        arbol9.scale.set(10.0, 10.0, 10.0);
-        arbol9.rotation.y = 0;
-        arbol9.position.set(90, 5.5, -80);
-        scene.add(arbol9);
       });
 
       //Orientación de los autos
@@ -543,17 +962,12 @@
           //orientacionTaxi = "w";
           vel = 0.2;
 
-          if(musicOn() == "true"){
-
+          if (musicOn() == "true") {
             playMusic();
-            console.log("la música esta activa")
-
-          }else{
-
-            console.log("la música esta desactivada")
-
+            console.log("la música esta activa");
+          } else {
+            console.log("la música esta desactivada");
           }
-
         }
         //right
         if (e.keyCode === 68) {
@@ -603,7 +1017,6 @@
           starStatus = "taked";
           starTakedBy = "Taxi";
           starSound.play();
-
         }
 
         //Ball
@@ -746,7 +1159,7 @@
         });
       }
 
-      function playMusic(){
+      function playMusic() {
         backgroundSound.play();
       }
 
