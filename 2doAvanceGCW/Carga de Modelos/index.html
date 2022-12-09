@@ -18,6 +18,7 @@
 
         return m;
       }
+    
     </script>
   </head>
   <body>
@@ -272,7 +273,13 @@
         visible: false,
       });
       const cube3 = new THREE.Mesh(cube3Geometry, cube3Material);
-      cube3.position.set(90, 4, 0);
+      if (level == 1){
+        cube3.position.set(90, 4, 0);
+      } else if (level == 2){
+        cube3.position.set(-90, 4, 0);
+      } else {
+        cube3.position.set(-90, 4, 50);
+      }
       cube3.castShadow = true;
 
       //Cubo4(ball)
@@ -283,7 +290,13 @@
         visible: false,
       });
       const cube4 = new THREE.Mesh(cube4Geometry, cube4Material);
-      cube4.position.set(95, 4, 40);
+      if (level == 1){
+        cube4.position.set(95, 4, 40);
+      } else if (level == 2){
+        cube4.position.set(40, 4, -40);
+      } else {
+        cube4.position.set(60, 4, -50);
+      }
       cube4.castShadow = true;
 
       //Cubo5(coin)
@@ -294,11 +307,15 @@
         visible: false,
       });
       const cube5 = new THREE.Mesh(cube5Geometry, cube5Material);
-      if (level == 1) {
+     
+      if (level == 1){
         cube5.position.set(20, 5, 72);
-      } else if (level == 2) {
-        cube5.position.set(40, 5, 50);
+      } else if (level == 2){
+        cube5.position.set(60, 4, 75);
+      } else {
+        cube5.position.set(60, 4, 45);
       }
+      
       cube5.castShadow = true;
 
       //Cubo6(meta)
@@ -531,9 +548,9 @@
           arbol9.position.set(90, 5.5, -80);
           scene.add(arbol9);
         });
-      } else if (level == 2) {
+      } else if (level == 2) {                                            //Desert
         // Plane
-
+    
         const planeGeometry = new THREE.PlaneGeometry(256, 256);
         const loader = new THREE.TextureLoader();
 
@@ -667,6 +684,8 @@
           arbol3.position.set(40, 0, -129);
           scene.add(arbol3);
         });
+
+        
       } else if (level == 3) {
         // Plane
 
@@ -953,7 +972,14 @@
         let star = gltf.scene;
         starReference = star;
         star.scale.set(1, 1, 1);
+        if (level == 1){
         star.position.set(90, 4, 0);
+      } else if (level == 2){
+        star.position.set(-40, 4, 0);
+      } else {
+        star.position.set(-40, 4, 50);
+      }
+        //star.position.set(90, 4, 0);
         scene.add(star);
       });
 
@@ -963,11 +989,14 @@
         let coin = gltf.scene;
         coinReference = coin;
         coin.scale.set(4, 4, 4);
-        if (level == 1) {
-          coin.position.set(20, 2, 70);
-        } else if (level == 2) {
-          coin.position.set(40, 2, 48);
-        }
+        
+      if (level == 1){
+        coin.position.set(20, 2, 70);
+      } else if (level == 2){
+        coin.position.set(60, 4, 75);
+      } else {
+        coin.position.set(60, 4, 45);
+      }
         scene.add(coin);
       });
 
@@ -977,7 +1006,13 @@
         let ball = gltf.scene;
         ballReference = ball;
         ball.scale.set(20, 20, 20);
+        if (level == 1){
         ball.position.set(95, 4, 40);
+      } else if (level == 2){
+        ball.position.set(40, 4, -40);
+      } else {
+        ball.position.set(60, 4, -50);
+      }
         scene.add(ball);
       });
 
