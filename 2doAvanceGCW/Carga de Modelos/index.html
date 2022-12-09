@@ -10,6 +10,7 @@
         margin: 0;
       }
     </style>
+    <link rel="stylesheet" href="Menus/Pause_estilos.css" />
 
     <script type="text/javascript">
       function musicOn() {
@@ -21,7 +22,21 @@
   </head>
   <body>
     <button id="button-login">Login Google</button>
-    <button id="button-logout">Logout</button>
+    <div id="myModal" class="modal">
+      <!-- Modal content -->
+      <!-- <div class="modal-content"> -->
+      <span class="close">&times;</span>
+      <div class="white-box">
+        <div class="buttons-container">
+          <nav class="menu">
+            <a id="continuePause">CONTINUAR</a>
+            <a href="/Menus/StartMenu.html">SALIR</a>
+          </nav>
+        </div>
+      </div>
+      <!-- </div> -->
+    </div>
+    <!-- <button id="button-logout">Logout</button> -->
 
     <script type="module">
       import * as THREE from "./js/three.module.js";
@@ -70,6 +85,12 @@
       var mainModel = 0;
       var url = new URL(window.location.href);
       var level = url.searchParams.get("level");
+      // Get the modal pause
+      var modal = document.getElementById("myModal");
+      // Get the <span> element that closes the modal
+      var span = document.getElementsByClassName("close")[0];
+      // Get the continue element
+      var continuePause = document.getElementById("continuePause");
 
       let currentUser;
       async function login() {
@@ -126,11 +147,11 @@
       }
 
       const buttonLogin = document.getElementById("button-login");
-      const buttonLogout = document.getElementById("button-logout");
+      //const buttonLogout = document.getElementById("button-logout");
       buttonLogin.addEventListener("click", async (e) => {
         const user = await login();
       });
-      buttonLogout.addEventListener("click", async (e) => {
+      /*buttonLogout.addEventListener("click", async (e) => {
         await signOut(auth)
           .then(() => {
             // Sign-out successful.
@@ -140,7 +161,7 @@
             // An error happened.
             console.log("An error happened");
           });
-      });
+      });*/
 
       // SCENE
       const scene = new THREE.Scene();
@@ -264,7 +285,11 @@
         visible: false,
       });
       const cube5 = new THREE.Mesh(cube5Geometry, cube5Material);
-      cube5.position.set(20, 5, 72);
+      if (level == 1) {
+        cube5.position.set(20, 5, 72);
+      } else if (level == 2) {
+        cube5.position.set(40, 5, 50);
+      }
       cube5.castShadow = true;
 
       //Cubo6(meta)
@@ -929,7 +954,11 @@
         let coin = gltf.scene;
         coinReference = coin;
         coin.scale.set(4, 4, 4);
-        coin.position.set(20, 2, 70);
+        if (level == 1) {
+          coin.position.set(20, 2, 70);
+        } else if (level == 2) {
+          coin.position.set(40, 2, 48);
+        }
         scene.add(coin);
       });
 
@@ -950,7 +979,7 @@
       let vel = 0;
       let withBall = 0.1;
       let withStar = 0.3;
-      let withcoin = 0.1;
+      let withcoin = 0.25;
       //Objetos
       let starStatus = "";
       let starTiming = 0;
@@ -1043,6 +1072,27 @@
           vel = 0;
           //b
         }
+        //CTRL to pause
+        if (e.keyCode === 27) {
+          modal.style.display = "block";
+        }
+      };
+
+      // When the user clicks on <span> (x), close the modal
+      span.onclick = function () {
+        modal.style.display = "none";
+      };
+
+      // When the user clicks on <continuePause>, close the modal
+      continuePause.onclick = function () {
+        modal.style.display = "none";
+      };
+
+      // When the user clicks anywhere outside of the modal, close it
+      window.onclick = function (event) {
+        if (event.target == modal) {
+          modal.style.display = "none";
+        }
       };
 
       const cameraControl = new OrbitControls(camera, renderer.domElement);
@@ -1095,17 +1145,14 @@
           coinTakedBy = "Taxi";
           ballSound.play();
         }
-        
+
         //Ganaste
         if (cube1BB.intersectsBox(cube6BB)) {
-         
           console.log("Llegaste a la meta");
-
         }
         if (cube2BB.intersectsBox(cube6BB)) {
-          
           console.log("Llegaste a la meta");
-
+          window.location.href = "./Menus/StartMenu.html";
         }
       }
 
@@ -1284,10 +1331,7 @@
             cube5.position.y -= 0.5;
           }
         }
-
       }
-
-     
 
       function animate() {
         cube2BB
