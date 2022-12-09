@@ -61,6 +61,8 @@
         onValue,
         set,
         remove,
+        get,
+        child,
       } from "https://www.gstatic.com/firebasejs/9.14.0/firebase-database.js";
 
       // Your web app's Firebase configuration
@@ -91,6 +93,9 @@
       var span = document.getElementsByClassName("close")[0];
       // Get the continue element
       var continuePause = document.getElementById("continuePause");
+      //Define si alguien ya tocó la meta
+      var ganador = 0;
+      var ganadas = 0;
 
       let currentUser;
       async function login() {
@@ -1147,11 +1152,40 @@
         }
 
         //Ganaste
-        if (cube1BB.intersectsBox(cube6BB)) {
+        /*if (cube1BB.intersectsBox(cube6BB)) {
           console.log("Llegaste a la meta");
-        }
+        }*/
         if (cube2BB.intersectsBox(cube6BB)) {
           console.log("Llegaste a la meta");
+          if (ganador == 0) {
+            console.log("ganaste");
+            ganador = 1;
+            writeWinner(0);
+            writeWinner(currentUser.uid);
+
+            //Agregar 1 a carreras ganadas
+            const dbRef = ref(getDatabase());
+            get(child(dbRef, `puntuaciones/${currentUser.uid}`))
+              .then((snapshot) => {
+                if (snapshot.exists()) {
+                  console.log(snapshot.val());
+                  const data = snapshot.val();
+                  console.log(data.ganadas);
+                  ganadas = data.ganadas + 1;
+                  writeScore(currentUser.uid, ganadas);
+                  /*Object.entries(data).forEach(([key, value]) => {
+                    ganadas = value.ganadas;
+                    console.log(value.ganadas);
+                  });*/
+                } else {
+                  console.log("No data available");
+                  initScore(currentUser.uid);
+                }
+              })
+              .catch((error) => {
+                console.error(error);
+              });
+          }
           window.location.href = "./Menus/StartMenu.html";
         }
       }
@@ -1271,6 +1305,20 @@
         });
       });
 
+      var first = 0;
+      const winnerRef = ref(db, "ganador");
+      onValue(winnerRef, (snapshot) => {
+        //const data = snapshot.val();
+        //console.log(data);
+        if (first > 0) {
+          ganador = 1;
+          console.log(ganador);
+        }
+        first++;
+        /*Object.entries(data).forEach(([key, value]) => {
+        });*/
+      });
+
       function writeUserData(userId, position, rotation, model) {
         const db = getDatabase();
         set(ref(db, "jugadores/" + userId), {
@@ -1278,6 +1326,27 @@
           z: position.z,
           rotation: rotation,
           model: model,
+        });
+      }
+
+      function writeWinner(userId) {
+        const db = getDatabase();
+        set(ref(db, "ganador"), {
+          playerId: userId,
+        });
+      }
+
+      function initScore(userId) {
+        const db = getDatabase();
+        set(ref(db, "puntuaciones/" + userId), {
+          ganadas: 1,
+        });
+      }
+
+      function writeScore(userId, ganadas){
+        const db = getDatabase();
+        set(ref(db, "puntuaciones/" + userId), {
+          ganadas: ganadas,
         });
       }
 

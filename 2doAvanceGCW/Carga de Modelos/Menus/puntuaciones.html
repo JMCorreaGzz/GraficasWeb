@@ -1,46 +1,104 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-	<meta charset="UTF-8">
-	<title>PUNTUACIONES</title>
-	<link rel="stylesheet" href="Config_estilos.css">
-</head>
-<body>
-	
-	<header class="header">
-		<div class="container">
-			
-			<div class="logo">
-				<h1>HIGH SCORE!</h1>
-			</div>
-		</div>
-	</header>
+  <head>
+    <meta charset="UTF-8" />
+    <title>PUNTUACIONES</title>
+    <link rel="stylesheet" href="Config_estilos.css" />
+  </head>
+  <body>
+    <header class="header">
+      <div class="container">
+        <div class="logo">
+          <h1>HIGH SCORE!</h1>
+        </div>
+      </div>
+    </header>
 
-	<div class="white-box">
-		<div class="buttons-container">
-			<nav class="menu">
-                <table> 
-                    <thead>
-                        <tr> <th><h2>USUARIOS</h2></th> </tr>
-                        <tr> <th><h2>PUNTUACIONES</h2></th> </tr>
-                    </thead>
-                    <tbody> 
+    <div class="white-box">
+      <div class="buttons-container">
+        <nav class="menu">
+          <table id="table">
+            <thead>
+              <tr>
+                <th><h2>USUARIO</h2></th>
+                <th><h2>CARRERAS GANADAS</h2></th>
+              </tr>
+              <!-- <tr>
+                <th><h2>USUARIO 1</h2></th>
+                <th><h2>3</h2></th>
+              </tr>
+              <tr>
+                <th><h2>USUARIO 2</h2></th>
+                <th><h2>1</h2></th>
+              </tr>
+              <tr>
+                <th><h2>USUARIO 3</h2></th>
+                <th><h2>2</h2></th>
+              </tr> -->
+            </thead>
+            <tbody></tbody>
+          </table>
 
-
-                    </tbody>
-                </table>
-				
-                
-				<!--<a href="#" style="margin-top: 2%">MODO 1</a>
+          <!--<a href="#" style="margin-top: 2%">MODO 1</a>
 				<a href="#">MODO 2</a>
 				<h2>DIFICULTAD:</h1>
 				<a href="#" style="margin-top: 2%">I </a>
 				<a href="#">II</a>
 				<a href="#">III</a>-->
+        </nav>
+      </div>
+    </div>
 
-			</nav>
-		</div>
-	</div>
-
-</body>
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/9.14.0/firebase-app.js";
+      import {
+        getDatabase,
+        ref,
+        onValue,
+        set,
+        remove,
+        get,
+        child,
+      } from "https://www.gstatic.com/firebasejs/9.14.0/firebase-database.js";
+      // Your web app's Firebase configuration
+      const firebaseConfig = {
+        apiKey: "AIzaSyD3femtx5cdAxoqups15m_2YEOqWfoP1kY",
+        authDomain: "pia-gcw.firebaseapp.com",
+        databaseURL: "https://pia-gcw-default-rtdb.firebaseio.com",
+        projectId: "pia-gcw",
+        storageBucket: "pia-gcw.appspot.com",
+        messagingSenderId: "41032725572",
+        appId: "1:41032725572:web:5cf1b445663bfbc02db811",
+      };
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+      const dbRef = ref(getDatabase());
+      get(child(dbRef, `puntuaciones`))
+        .then((snapshot) => {
+          if (snapshot.exists()) {
+            const data = snapshot.val();
+            //console.log(data);
+            Object.entries(data).forEach(([key, value]) => {
+              console.log(key);
+              console.log(value.ganadas);
+			  //Esta función es la que agrega cada renglón de la tabla
+			  functionaddRow(key, value.ganadas);
+            });
+          } else {
+            console.log("No data available");
+          }
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+      function functionaddRow(userId, ganadas) {
+        var tableRow = document.getElementById("table");
+        var row = tableRow.insertRow(-1);
+        var cell1 = row.insertCell(0);
+        var cell2 = row.insertCell(1);
+        cell1.innerHTML = userId;
+        cell2.innerHTML = ganadas;
+      }
+    </script>
+  </body>
 </html>
