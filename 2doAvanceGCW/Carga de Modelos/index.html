@@ -96,6 +96,9 @@
       //Define si alguien ya tocó la meta
       var ganador = 0;
       var ganadas = 0;
+      //Determina el modo de juego (1 es carrera, 2 es contrareloj)
+      var gameMode = 0;
+      var numberOfPlayers = 0;
 
       let currentUser;
       async function login() {
@@ -149,6 +152,7 @@
             // ...
             console.error("error");
           });
+        countNumberOfPlayers();
       }
 
       const buttonLogin = document.getElementById("button-login");
@@ -1051,6 +1055,10 @@
           } else {
             console.log("la música esta desactivada");
           }
+
+          if (gameMode == 2) {
+            //Comenzar cronómetro
+          }
         }
         //right
         if (e.keyCode === 68) {
@@ -1157,7 +1165,7 @@
         }*/
         if (cube2BB.intersectsBox(cube6BB)) {
           console.log("Llegaste a la meta");
-          if (ganador == 0) {
+          if (ganador == 0 && gameMode == 1) {
             console.log("ganaste");
             ganador = 1;
             writeWinner(0);
@@ -1185,6 +1193,9 @@
               .catch((error) => {
                 console.error(error);
               });
+          }
+          if (gameMode == 2) {
+            //terminar el cronómetro
           }
           window.location.href = "./Menus/StartMenu.html";
         }
@@ -1319,6 +1330,19 @@
         });*/
       });
 
+      const numOfPlayersRef = ref(db, "cantjugadores");
+      onValue(numOfPlayersRef, (snapshot) => {
+        const data = snapshot.val();
+        numberOfPlayers = data.numero;
+        if (numberOfPlayers == 1) {
+          gameMode = 2;
+        } else if (numberOfPlayers > 1) {
+          gameMode = 1;
+        }
+        console.log("numberOfPlayers: " + numberOfPlayers);
+        console.log("gameMode: " + gameMode);
+      });
+
       function writeUserData(userId, position, rotation, model) {
         const db = getDatabase();
         set(ref(db, "jugadores/" + userId), {
@@ -1343,11 +1367,40 @@
         });
       }
 
-      function writeScore(userId, ganadas){
+      function writeScore(userId, ganadas) {
         const db = getDatabase();
         set(ref(db, "puntuaciones/" + userId), {
           ganadas: ganadas,
         });
+      }
+
+      function writeNumberOfPlayers(numOfPlayers) {
+        const db = getDatabase();
+        set(ref(db, "cantjugadores"), {
+          numero: numOfPlayers,
+        });
+      }
+
+      function countNumberOfPlayers() {
+        const dbRef = ref(getDatabase());
+        get(child(dbRef, `jugadores`))
+          .then((snapshot) => {
+            if (snapshot.exists()) {
+              const data = snapshot.val();
+              //console.log(data);
+              numberOfPlayers = 0;
+              Object.entries(data).forEach(([key, value]) => {
+                numberOfPlayers++;
+                //console.log(numberOfPlayers);
+                writeNumberOfPlayers(numberOfPlayers);
+              });
+            } else {
+              console.log("No data available");
+            }
+          })
+          .catch((error) => {
+            console.error(error);
+          });
       }
 
       function playMusic() {
@@ -1432,6 +1485,7 @@
         if (currentUser) {
           const dbRef = ref(db, "/jugadores/" + currentUser.uid);
           remove(dbRef).then(() => console.log("Deleted"));
+          countNumberOfPlayers();
         }
       };
 
@@ -1439,6 +1493,7 @@
         if (currentUser) {
           const dbRef = ref(db, "/jugadores/" + currentUser.uid);
           remove(dbRef).then(() => console.log("Deleted"));
+          countNumberOfPlayers();
         }
       };
 
