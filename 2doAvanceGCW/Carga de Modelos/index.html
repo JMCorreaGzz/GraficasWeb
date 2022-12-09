@@ -45,6 +45,7 @@
         ref,
         onValue,
         set,
+        remove,
       } from "https://www.gstatic.com/firebasejs/9.14.0/firebase-database.js";
 
       // Your web app's Firebase configuration
@@ -67,7 +68,7 @@
       let taxi;
       let tesla;
       var mainModel = 0;
-      var url = new URL(window.location.href)
+      var url = new URL(window.location.href);
       var level = url.searchParams.get("level");
 
       let currentUser;
@@ -1226,6 +1227,20 @@
           objectsAnimation();
         }
       }
+
+      window.onunload = function () {
+        if (currentUser) {
+          const dbRef = ref(db, "/jugadores/" + currentUser.uid);
+          remove(dbRef).then(() => console.log("Deleted"));
+        }
+      };
+
+      window.onbeforeunload = function () {
+        if (currentUser) {
+          const dbRef = ref(db, "/jugadores/" + currentUser.uid);
+          remove(dbRef).then(() => console.log("Deleted"));
+        }
+      };
 
       animate();
     </script>
