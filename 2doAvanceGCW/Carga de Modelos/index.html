@@ -256,6 +256,28 @@
       cube4.position.set(95, 4, 40);
       cube4.castShadow = true;
 
+      //Cubo5(coin)
+      const cube5Geometry = new THREE.BoxGeometry(3, 3, 3);
+      const cube5Material = new THREE.MeshPhongMaterial({
+        color: "blue",
+        wireframe: true,
+        visible: false,
+      });
+      const cube5 = new THREE.Mesh(cube5Geometry, cube5Material);
+      cube5.position.set(20, 5, 72);
+      cube5.castShadow = true;
+
+      //Cubo6(meta)
+      const cube6Geometry = new THREE.BoxGeometry(3, 10, 20);
+      const cube6Material = new THREE.MeshPhongMaterial({
+        color: "white",
+        wireframe: true,
+        visible: true,
+      });
+      const cube6 = new THREE.Mesh(cube6Geometry, cube6Material);
+      cube6.position.set(-15, 3, 73);
+      cube6.castShadow = true;
+
       //----------------------------Colisiones------------------------------
       //Cubo1(theBeast)
       let cube1BB = new THREE.Box3();
@@ -273,6 +295,14 @@
       let cube4BB = new THREE.Box3();
       cube4BB.setFromObject(cube4);
 
+      //Cubo5(coin)
+      let cube5BB = new THREE.Box3();
+      cube5BB.setFromObject(cube5);
+
+      //Cubo6
+      let cube6BB = new THREE.Box3();
+      cube6BB.setFromObject(cube6);
+
       //---------------------------------------------------------------------
 
       // Adding to scene
@@ -281,6 +311,8 @@
         cube2,
         cube3,
         cube4,
+        cube5,
+        cube6,
         ambient,
         hemispherelight,
         directionalLight
@@ -891,6 +923,16 @@
         scene.add(star);
       });
 
+      let coinReference;
+      loaderGLTF.load("Models/stylized_coin.glb", function (gltf) {
+        //coin
+        let coin = gltf.scene;
+        coinReference = coin;
+        coin.scale.set(4, 4, 4);
+        coin.position.set(20, 2, 70);
+        scene.add(coin);
+      });
+
       let ballReference;
       loaderGLTF.load("Models/BowlingBall.glb", function (gltf) {
         //bowlingBall
@@ -908,10 +950,15 @@
       let vel = 0;
       let withBall = 0.1;
       let withStar = 0.3;
+      let withcoin = 0.1;
       //Objetos
       let starStatus = "";
       let starTiming = 0;
       let starTakedBy = "";
+
+      let coinStatus = "";
+      let coinTiming = 0;
+      let coinTakedBy = "";
 
       let ballStatus = "";
       let ballTiming = 0;
@@ -1033,6 +1080,32 @@
           ballStatus = "taked";
           ballTakedBy = "Taxi";
           ballSound.play();
+        }
+
+        //Coin
+        if (cube1BB.intersectsBox(cube5BB)) {
+          vel = withcoin;
+          coinStatus = "taked";
+          coinTakedBy = "TheBeast";
+          ballSound.play();
+        }
+        if (cube2BB.intersectsBox(cube5BB)) {
+          vel = withcoin;
+          coinStatus = "taked";
+          coinTakedBy = "Taxi";
+          ballSound.play();
+        }
+        
+        //Ganaste
+        if (cube1BB.intersectsBox(cube6BB)) {
+         
+          console.log("Llegaste a la meta");
+
+        }
+        if (cube2BB.intersectsBox(cube6BB)) {
+          
+          console.log("Llegaste a la meta");
+
         }
       }
 
@@ -1200,7 +1273,21 @@
             cube4.position.y -= 0.5;
           }
         }
+
+        if (coinReference) {
+          coinReference.rotation.y += 0.01;
+        }
+
+        if (coinStatus == "taked") {
+          if (coinReference.position.y > -8) {
+            coinReference.position.y -= 0.2;
+            cube5.position.y -= 0.5;
+          }
+        }
+
       }
+
+     
 
       function animate() {
         cube2BB
@@ -1223,7 +1310,7 @@
             mainModel
           );
         }
-        if (starReference && ballReference) {
+        if (starReference && ballReference && coinReference) {
           objectsAnimation();
         }
       }
