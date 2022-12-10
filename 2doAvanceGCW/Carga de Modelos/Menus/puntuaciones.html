@@ -17,11 +17,12 @@
     <div class="white-box">
       <div class="buttons-container">
         <nav class="menu">
-          <table id="table">
+          <table class ="userPointsTable" id="table">
             <thead>
               <tr>
                 <th><h2>USUARIO</h2></th>
                 <th><h2>CARRERAS GANADAS</h2></th>
+                
               </tr>
               <!-- <tr>
                 <th><h2>USUARIO 1</h2></th>
@@ -95,7 +96,8 @@
         var tableRow = document.getElementById("table");
         var row = tableRow.insertRow(-1);
         var cell1 = row.insertCell(0);
-        var cell2 = row.insertCell(1);
+        var phantomCell1 = row.insertCell(1);
+        var cell2 = row.insertCell(2);
         cell1.innerHTML = userId;
         cell2.innerHTML = ganadas;
       }
