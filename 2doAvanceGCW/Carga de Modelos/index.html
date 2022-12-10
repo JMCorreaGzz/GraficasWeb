@@ -18,7 +18,6 @@
 
         return m;
       }
-    
     </script>
   </head>
   <body>
@@ -37,6 +36,18 @@
       </div>
       <!-- </div> -->
     </div>
+    <div id="tiempoTotal" class="modal">
+      <!-- Modal content -->
+      <!-- <div class="modal-content"> -->
+      <span class="close2">&times;</span>
+      <div id="tiempoDiv" class="white-box">
+        <div class="buttons-container">
+          <p id="segundos"></p>
+        </div>
+      </div>
+      <!-- </div> -->
+    </div>
+
     <!-- <button id="button-logout">Logout</button> -->
 
     <script type="module">
@@ -90,8 +101,10 @@
       var level = url.searchParams.get("level");
       // Get the modal pause
       var modal = document.getElementById("myModal");
+      var modal2 = document.getElementById("tiempoTotal");
       // Get the <span> element that closes the modal
       var span = document.getElementsByClassName("close")[0];
+      var span2 = document.getElementsByClassName("close2")[0];
       // Get the continue element
       var continuePause = document.getElementById("continuePause");
       //Define si alguien ya tocó la meta
@@ -100,6 +113,12 @@
       //Determina el modo de juego (1 es carrera, 2 es contrareloj)
       var gameMode = 0;
       var numberOfPlayers = 0;
+      var startTime = 0;
+      var endTime = 0;
+      //Determina si es la primera vez que se presiona la tecla "w"
+      var wFirst = 0;
+      //Determina si es la primera vez que se toca la meta
+      var metaFirst = 0;
 
       let currentUser;
       async function login() {
@@ -273,9 +292,9 @@
         visible: false,
       });
       const cube3 = new THREE.Mesh(cube3Geometry, cube3Material);
-      if (level == 1){
+      if (level == 1) {
         cube3.position.set(90, 4, 0);
-      } else if (level == 2){
+      } else if (level == 2) {
         cube3.position.set(-90, 4, 0);
       } else {
         cube3.position.set(-90, 4, 50);
@@ -290,9 +309,9 @@
         visible: false,
       });
       const cube4 = new THREE.Mesh(cube4Geometry, cube4Material);
-      if (level == 1){
+      if (level == 1) {
         cube4.position.set(95, 4, 40);
-      } else if (level == 2){
+      } else if (level == 2) {
         cube4.position.set(40, 4, -40);
       } else {
         cube4.position.set(60, 4, -50);
@@ -307,15 +326,15 @@
         visible: false,
       });
       const cube5 = new THREE.Mesh(cube5Geometry, cube5Material);
-     
-      if (level == 1){
+
+      if (level == 1) {
         cube5.position.set(20, 5, 72);
-      } else if (level == 2){
+      } else if (level == 2) {
         cube5.position.set(60, 4, 75);
       } else {
         cube5.position.set(60, 4, 45);
       }
-      
+
       cube5.castShadow = true;
 
       //Cubo6(meta)
@@ -548,9 +567,10 @@
           arbol9.position.set(90, 5.5, -80);
           scene.add(arbol9);
         });
-      } else if (level == 2) {                                            //Desert
+      } else if (level == 2) {
+        //Desert
         // Plane
-    
+
         const planeGeometry = new THREE.PlaneGeometry(256, 256);
         const loader = new THREE.TextureLoader();
 
@@ -684,8 +704,6 @@
           arbol3.position.set(40, 0, -129);
           scene.add(arbol3);
         });
-
-        
       } else if (level == 3) {
         // Plane
 
@@ -972,13 +990,13 @@
         let star = gltf.scene;
         starReference = star;
         star.scale.set(1, 1, 1);
-        if (level == 1){
-        star.position.set(90, 4, 0);
-      } else if (level == 2){
-        star.position.set(-40, 4, 0);
-      } else {
-        star.position.set(-40, 4, 50);
-      }
+        if (level == 1) {
+          star.position.set(90, 4, 0);
+        } else if (level == 2) {
+          star.position.set(-40, 4, 0);
+        } else {
+          star.position.set(-40, 4, 50);
+        }
         //star.position.set(90, 4, 0);
         scene.add(star);
       });
@@ -989,14 +1007,14 @@
         let coin = gltf.scene;
         coinReference = coin;
         coin.scale.set(4, 4, 4);
-        
-      if (level == 1){
-        coin.position.set(20, 2, 70);
-      } else if (level == 2){
-        coin.position.set(60, 4, 75);
-      } else {
-        coin.position.set(60, 4, 45);
-      }
+
+        if (level == 1) {
+          coin.position.set(20, 2, 70);
+        } else if (level == 2) {
+          coin.position.set(60, 4, 75);
+        } else {
+          coin.position.set(60, 4, 45);
+        }
         scene.add(coin);
       });
 
@@ -1006,13 +1024,13 @@
         let ball = gltf.scene;
         ballReference = ball;
         ball.scale.set(20, 20, 20);
-        if (level == 1){
-        ball.position.set(95, 4, 40);
-      } else if (level == 2){
-        ball.position.set(40, 4, -40);
-      } else {
-        ball.position.set(60, 4, -50);
-      }
+        if (level == 1) {
+          ball.position.set(95, 4, 40);
+        } else if (level == 2) {
+          ball.position.set(40, 4, -40);
+        } else {
+          ball.position.set(60, 4, -50);
+        }
         scene.add(ball);
       });
 
@@ -1091,8 +1109,11 @@
             console.log("la música esta desactivada");
           }
 
-          if (gameMode == 2) {
+          if (gameMode == 2 && wFirst == 0) {
             //Comenzar cronómetro
+            console.log("Comenzar cronómetro");
+            startTime = new Date();
+            wFirst = 1;
           }
         }
         //right
@@ -1131,6 +1152,10 @@
         modal.style.display = "none";
       };
 
+      span2.onclick = function () {
+        modal2.style.display = "none";
+      };
+
       // When the user clicks on <continuePause>, close the modal
       continuePause.onclick = function () {
         modal.style.display = "none";
@@ -1140,6 +1165,9 @@
       window.onclick = function (event) {
         if (event.target == modal) {
           modal.style.display = "none";
+        }
+        if (event.target == modal2) {
+          modal2.style.display = "none";
         }
       };
 
@@ -1198,7 +1226,7 @@
         /*if (cube1BB.intersectsBox(cube6BB)) {
           console.log("Llegaste a la meta");
         }*/
-        if (cube2BB.intersectsBox(cube6BB)) {
+        if (cube2BB.intersectsBox(cube6BB) && metaFirst == 0) {
           console.log("Llegaste a la meta");
           if (ganador == 0 && gameMode == 1) {
             console.log("ganaste");
@@ -1231,8 +1259,26 @@
           }
           if (gameMode == 2) {
             //terminar el cronómetro
+            console.log("terminar el cronómetro");
+            endTime = new Date();
+            const totalTime = endTime - startTime;
+            const seconds = totalTime / 1000;
+
+            //Agregar texto a ventana modal
+            const para = document.createElement("p");
+            const node = document.createTextNode("TERMINASTE LA CARRERA EN " + seconds + " SEGUNDOS");
+            para.appendChild(node);
+            const element = document.getElementById("tiempoDiv");
+            element.appendChild(para);
+
+
+            modal2.style.display = "block";
+            console.log(seconds);
           }
-          window.location.href = "./Menus/StartMenu.html";
+          if (gameMode == 1) {
+            //window.location.href = "./Menus/StartMenu.html";
+          }
+          metaFirst = 1;
         }
       }
 
@@ -1379,7 +1425,7 @@
       });
 
       function writeUserData(userId, position, rotation, model) {
-        const db = getDatabase();
+        const db = getDatabase();writeScore
         set(ref(db, "jugadores/" + userId), {
           x: position.x,
           z: position.z,
